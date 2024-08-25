@@ -1,3 +1,5 @@
+const reverseIterator: unique symbol = Symbol();
+
 export type Mapper<T, R> = (value: T) => R;
 
 export type Action<T> = (value: T) => void;
@@ -9,7 +11,11 @@ type AccessorResult<T> = {
   item: IteratorResult<T>;
 };
 
-export interface LazyArray<T> extends Iterable<T> {
+interface ReversibleIterable<T> {
+  [reverseIterator](): Iterator<T>;
+}
+
+export interface LazyArray<T> extends Iterable<T>, ReversibleIterable<T> {
   /** Filters out items which return 'false' when entered into the predicate */
   filter: (predicate: Predicate<T>) => LazyArray<T>;
   /** Maps each value into a different value */
@@ -17,10 +23,14 @@ export interface LazyArray<T> extends Iterable<T> {
   /**
    * Runs the provided action on each item when the item is processed.
    *
-   * Note that since this is lazy, the items will need to be "pulled through" the iterator.
+   * Note that since this is lazy, the items will need to be "pulled through"
+   * the iterator.
    */
   do: (action: Action<T>) => LazyArray<T>;
+  /** Collects the current array into a standard array */
   collect: () => Array<T>;
+  /** Reverses the current lazy array. */
+  reverse: () => LazyArray<T>;
 }
 
 /**
@@ -28,7 +38,9 @@ export interface LazyArray<T> extends Iterable<T> {
  *
  * This is still in early development, and is subject to change.
  */
-export function la<T>(source: Iterable<T> | Array<T>): LazyArray<T> {
+export function la<T>(
+  source: (Iterable<T> & ReversibleIterable<T>) | Array<T>,
+): LazyArray<T> {
   return {
     [Symbol.iterator]() {
       return {
@@ -37,9 +49,16 @@ export function la<T>(source: Iterable<T> | Array<T>): LazyArray<T> {
           : source[Symbol.iterator]().next,
       };
     },
+    [reverseIterator]() {
+      return {
+        next: Array.isArray(source)
+          ? arrayToReverseIterator(source)
+          : source[reverseIterator]().next,
+      };
+    },
 
     filter(filterFunction) {
-      return cloneAccessor<T, T>(this, (val) => ({
+      return operatorHelper<T, T>(this, (val) => ({
         filter: filterFunction(val),
         item: {
           done: false,
@@ -49,7 +68,7 @@ export function la<T>(source: Iterable<T> | Array<T>): LazyArray<T> {
     },
 
     do(action) {
-      return cloneAccessor<T, T>(this, (val) => {
+      return operatorHelper<T, T>(this, (val) => {
         action(val);
         return {
           item: {
@@ -61,12 +80,19 @@ export function la<T>(source: Iterable<T> | Array<T>): LazyArray<T> {
     },
 
     map<R>(mapper: Mapper<T, R>) {
-      return cloneAccessor<T, R>(this, (val) => ({
+      return operatorHelper<T, R>(this, (val) => ({
         item: {
           done: false,
           value: mapper(val),
         },
       }));
+    },
+
+    reverse() {
+      return la({
+        [Symbol.iterator]: this[reverseIterator],
+        [reverseIterator]: this[Symbol.iterator],
+      });
     },
 
     collect() {
@@ -82,7 +108,7 @@ function arrayToIterator<T>(arr: Array<T>): () => IteratorResult<T> {
       return {
         done: true,
         value: undefined,
-      };
+      } as any;
     } else {
       return {
         value: arr[index++],
@@ -92,17 +118,48 @@ function arrayToIterator<T>(arr: Array<T>): () => IteratorResult<T> {
   };
 }
 
-function cloneAccessor<T, R>(
+function arrayToReverseIterator<T>(arr: Array<T>): () => IteratorResult<T> {
+  let index = 0;
+  return () => {
+    if (arr.length == index) {
+      return {
+        done: true,
+        value: undefined,
+      } as any;
+    } else {
+      return {
+        value: arr[arr.length - index++ - 1],
+        done: false,
+      };
+    }
+  };
+}
+
+function operatorHelper<T, R>(
   lazyArray: LazyArray<T>,
   callback: (val: T) => AccessorResult<R>,
 ): LazyArray<R> {
-  // Clone the parent at creation time
-  const parentIterable = lazyArray[Symbol.iterator]();
+  lazyArray[Symbol.iterator];
+  const forwardNext = cloneAccessor(lazyArray[Symbol.iterator](), callback);
+  const reverseNext = cloneAccessor(lazyArray[reverseIterator](), callback);
+  return la({
+    [Symbol.iterator]() {
+      return { next: forwardNext };
+    },
+    [reverseIterator]() {
+      return { next: reverseNext };
+    },
+  });
+}
 
+function cloneAccessor<T, R>(
+  iterator: Iterator<T>,
+  callback: (val: T) => AccessorResult<R>,
+): () => IteratorResult<R> {
   const next: () => IteratorResult<R> = () => {
     // Consume the parent at consumption time
     while (true) {
-      const parentNext = parentIterable.next();
+      const parentNext = iterator.next();
       if (parentNext.done === true) {
         return parentNext;
       }
@@ -114,9 +171,5 @@ function cloneAccessor<T, R>(
     }
   };
 
-  return la({
-    [Symbol.iterator]() {
-      return { next };
-    },
-  });
+  return next;
 }

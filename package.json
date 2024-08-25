@@ -2,13 +2,18 @@
   "name": "lazy",
   "version": "0.0.1",
   "description": "Lazy Iterators",
-  "main": "index.js",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "vitest"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^22.5.0",
     "prettier": "^3.3.3",
     "prettier-plugin-jsdoc": "^1.3.0",
     "typescript": "^5.5.4",
