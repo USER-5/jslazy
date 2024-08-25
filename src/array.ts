@@ -20,6 +20,8 @@ export interface LazyArray<T> extends Iterable<T>, ReversibleIterable<T> {
   filter: (predicate: Predicate<T>) => LazyArray<T>;
   /** Maps each value into a different value */
   map: <V>(mapper: Mapper<T, V>) => LazyArray<V>;
+  /** Flattens each item of the contained lazy arrays */
+  flatMap: <V>(mapper: Mapper<T, LazyArray<V>>) => LazyArray<V>;
   /**
    * Runs the provided action on each item when the item is processed.
    *
@@ -88,6 +90,38 @@ export function la<T>(
       }));
     },
 
+    flatMap<R>(mapper: Mapper<T, LazyArray<R>>) {
+      return forwardReverse<T, R>(this, (iterator, prop) => {
+        let subIterator: Iterator<R> | null = null;
+        return () => {
+          while (true) {
+            // Get next subiterator
+            if (!subIterator) {
+              const subIteratorResult = iterator.next();
+              if (subIteratorResult.done === false) {
+                subIterator = mapper(subIteratorResult.value)[prop]();
+              } else {
+                return {
+                  done: true,
+                  value: undefined,
+                } as any;
+              }
+            }
+            const nextValue = subIterator.next();
+            if (nextValue.done === true) {
+              subIterator = null;
+              continue;
+            } else {
+              return {
+                done: false,
+                value: nextValue.value,
+              };
+            }
+          }
+        };
+      });
+    },
+
     reverse() {
       return la({
         [Symbol.iterator]: this[reverseIterator],
@@ -140,8 +174,21 @@ function operatorHelper<T, R>(
   callback: (val: T) => AccessorResult<R>,
 ): LazyArray<R> {
   lazyArray[Symbol.iterator];
-  const forwardNext = cloneAccessor(lazyArray[Symbol.iterator](), callback);
-  const reverseNext = cloneAccessor(lazyArray[reverseIterator](), callback);
+  return forwardReverse(lazyArray, (iterator, _) => {
+    return cloneAccessor(iterator, callback);
+  });
+}
+
+/** Applies the provided function to both forward and reverse iterators */
+function forwardReverse<T, V>(
+  lazyArray: LazyArray<T>,
+  func: (
+    it: Iterator<T>,
+    iteratorProp: typeof reverseIterator | typeof Symbol.iterator,
+  ) => () => IteratorResult<V>,
+): LazyArray<V> {
+  const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
+  const reverseNext = func(lazyArray[reverseIterator](), reverseIterator);
   return la({
     [Symbol.iterator]() {
       return { next: forwardNext };

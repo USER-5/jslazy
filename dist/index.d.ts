@@ -1,1 +1,1 @@
-export {};
+export { la } from "./array";
