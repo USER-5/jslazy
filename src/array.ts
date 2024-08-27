@@ -1,4 +1,4 @@
-const reverseIterator: unique symbol = Symbol();
+const R_ITER: unique symbol = Symbol.for("REVERSE ITERATOR")
 
 export type Mapper<T, R> = (value: T) => R;
 
@@ -6,33 +6,33 @@ export type Action<T> = (value: T) => void;
 
 export type Predicate<T> = (value: T) => boolean;
 
-type AccessorResult<T> = {
-  filter?: boolean;
-  item: IteratorResult<T>;
-};
-
 interface ReversibleIterable<T> {
-  [reverseIterator](): Iterator<T>;
+  [R_ITER](): Iterator<T>;
 }
 
-export interface LazyArray<T> extends Iterable<T>, ReversibleIterable<T> {
+export interface ReversibleLazy<T> extends Iterable<T>, ReversibleIterable<T> {
   /** Filters out items which return 'false' when entered into the predicate */
-  filter: (predicate: Predicate<T>) => LazyArray<T>;
+  filter: (predicate: Predicate<T>) => ReversibleLazy<T>;
   /** Maps each value into a different value */
-  map: <V>(mapper: Mapper<T, V>) => LazyArray<V>;
+  map: <V>(mapper: Mapper<T, V>) => ReversibleLazy<V>;
   /** Flattens each item of the contained lazy arrays */
-  flatMap: <V>(mapper: Mapper<T, LazyArray<V>>) => LazyArray<V>;
+  flatMap: <V>(mapper: Mapper<T, ReversibleLazy<V>>) => ReversibleLazy<V>;
   /**
    * Runs the provided action on each item when the item is processed.
    *
    * Note that since this is lazy, the items will need to be "pulled through"
    * the iterator.
    */
-  do: (action: Action<T>) => LazyArray<T>;
+  do: (action: Action<T>) => ReversibleLazy<T>;
   /** Collects the current array into a standard array */
   collect: () => Array<T>;
+  /**
+   * Limits the number of values to _at most_ `nValues`. If the array ends
+   * before reaching `nValues`, then this operator has no effect.
+   */
+  limit: (nValues: number) => ReversibleLazy<T>;
   /** Reverses the current lazy array. */
-  reverse: () => LazyArray<T>;
+  reverse: () => ReversibleLazy<T>;
 }
 
 /**
@@ -40,9 +40,9 @@ export interface LazyArray<T> extends Iterable<T>, ReversibleIterable<T> {
  *
  * This is still in early development, and is subject to change.
  */
-export function la<T>(
+export function lazy<T>(
   source: (Iterable<T> & ReversibleIterable<T>) | Array<T>,
-): LazyArray<T> {
+): ReversibleLazy<T> {
   return {
     [Symbol.iterator]() {
       return {
@@ -51,16 +51,16 @@ export function la<T>(
           : source[Symbol.iterator]().next,
       };
     },
-    [reverseIterator]() {
+    [R_ITER]() {
       return {
         next: Array.isArray(source)
           ? arrayToReverseIterator(source)
-          : source[reverseIterator]().next,
+          : source[R_ITER]().next,
       };
     },
 
     filter(filterFunction) {
-      return operatorHelper<T, T>(this, (val) => ({
+      return simpleHelper<T, T>(this, (val) => ({
         filter: filterFunction(val),
         item: {
           done: false,
@@ -70,7 +70,7 @@ export function la<T>(
     },
 
     do(action) {
-      return operatorHelper<T, T>(this, (val) => {
+      return simpleHelper<T, T>(this, (val) => {
         action(val);
         return {
           item: {
@@ -82,7 +82,7 @@ export function la<T>(
     },
 
     map<R>(mapper: Mapper<T, R>) {
-      return operatorHelper<T, R>(this, (val) => ({
+      return simpleHelper<T, R>(this, (val) => ({
         item: {
           done: false,
           value: mapper(val),
@@ -90,8 +90,8 @@ export function la<T>(
       }));
     },
 
-    flatMap<R>(mapper: Mapper<T, LazyArray<R>>) {
-      return forwardReverse<T, R>(this, (iterator, prop) => {
+    flatMap<R>(mapper: Mapper<T, ReversibleLazy<R>>) {
+      return forwardReverseHelper<T, R>(this, (iterator, prop) => {
         let subIterator: Iterator<R> | null = null;
         return () => {
           while (true) {
@@ -122,10 +122,27 @@ export function la<T>(
       });
     },
 
+    limit(nValues) {
+      let nSeen = 0;
+      return forwardReverseHelper(this, (iterator) => {
+        return () => {
+          if (nSeen < nValues) {
+            nSeen += 1;
+            return iterator.next();
+          } else {
+            return {
+              done: true,
+              value: undefined,
+            };
+          }
+        };
+      });
+    },
+
     reverse() {
-      return la({
-        [Symbol.iterator]: this[reverseIterator],
-        [reverseIterator]: this[Symbol.iterator],
+      return lazy({
+        [Symbol.iterator]: this[R_ITER],
+        [R_ITER]: this[Symbol.iterator],
       });
     },
 
@@ -169,35 +186,39 @@ function arrayToReverseIterator<T>(arr: Array<T>): () => IteratorResult<T> {
   };
 }
 
-function operatorHelper<T, R>(
-  lazyArray: LazyArray<T>,
+function simpleHelper<T, R>(
+  lazyArray: ReversibleLazy<T>,
   callback: (val: T) => AccessorResult<R>,
-): LazyArray<R> {
-  lazyArray[Symbol.iterator];
-  return forwardReverse(lazyArray, (iterator, _) => {
+): ReversibleLazy<R> {
+  return forwardReverseHelper(lazyArray, (iterator, _) => {
     return cloneAccessor(iterator, callback);
   });
 }
 
 /** Applies the provided function to both forward and reverse iterators */
-function forwardReverse<T, V>(
-  lazyArray: LazyArray<T>,
+function forwardReverseHelper<T, V>(
+  lazyArray: ReversibleLazy<T>,
   func: (
     it: Iterator<T>,
-    iteratorProp: typeof reverseIterator | typeof Symbol.iterator,
+    iteratorProp: typeof R_ITER | typeof Symbol.iterator,
   ) => () => IteratorResult<V>,
-): LazyArray<V> {
+): ReversibleLazy<V> {
   const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
-  const reverseNext = func(lazyArray[reverseIterator](), reverseIterator);
-  return la({
+  const reverseNext = func(lazyArray[R_ITER](), R_ITER);
+  return lazy({
     [Symbol.iterator]() {
       return { next: forwardNext };
     },
-    [reverseIterator]() {
+    [R_ITER]() {
       return { next: reverseNext };
     },
   });
 }
+
+type AccessorResult<T> = {
+  filter?: boolean;
+  item: IteratorResult<T>;
+};
 
 function cloneAccessor<T, R>(
   iterator: Iterator<T>,

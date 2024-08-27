@@ -1,10 +1,10 @@
-const reverseIterator = Symbol();
+const R_ITER = Symbol.for("REVERSE ITERATOR");
 /**
  * Creates a lazy array from a standard array.
  *
  * This is still in early development, and is subject to change.
  */
-export function la(source) {
+export function lazy(source) {
     return {
         [Symbol.iterator]() {
             return {
@@ -13,15 +13,15 @@ export function la(source) {
                     : source[Symbol.iterator]().next,
             };
         },
-        [reverseIterator]() {
+        [R_ITER]() {
             return {
                 next: Array.isArray(source)
                     ? arrayToReverseIterator(source)
-                    : source[reverseIterator]().next,
+                    : source[R_ITER]().next,
             };
         },
         filter(filterFunction) {
-            return operatorHelper(this, (val) => ({
+            return simpleHelper(this, (val) => ({
                 filter: filterFunction(val),
                 item: {
                     done: false,
@@ -30,7 +30,7 @@ export function la(source) {
             }));
         },
         do(action) {
-            return operatorHelper(this, (val) => {
+            return simpleHelper(this, (val) => {
                 action(val);
                 return {
                     item: {
@@ -41,7 +41,7 @@ export function la(source) {
             });
         },
         map(mapper) {
-            return operatorHelper(this, (val) => ({
+            return simpleHelper(this, (val) => ({
                 item: {
                     done: false,
                     value: mapper(val),
@@ -49,7 +49,7 @@ export function la(source) {
             }));
         },
         flatMap(mapper) {
-            return forwardReverse(this, (iterator, prop) => {
+            return forwardReverseHelper(this, (iterator, prop) => {
                 let subIterator = null;
                 return () => {
                     while (true) {
@@ -81,10 +81,27 @@ export function la(source) {
                 };
             });
         },
+        limit(nValues) {
+            let nSeen = 0;
+            return forwardReverseHelper(this, (iterator) => {
+                return () => {
+                    if (nSeen < nValues) {
+                        nSeen += 1;
+                        return iterator.next();
+                    }
+                    else {
+                        return {
+                            done: true,
+                            value: undefined,
+                        };
+                    }
+                };
+            });
+        },
         reverse() {
-            return la({
-                [Symbol.iterator]: this[reverseIterator],
-                [reverseIterator]: this[Symbol.iterator],
+            return lazy({
+                [Symbol.iterator]: this[R_ITER],
+                [R_ITER]: this[Symbol.iterator],
             });
         },
         collect() {
@@ -126,21 +143,20 @@ function arrayToReverseIterator(arr) {
         }
     };
 }
-function operatorHelper(lazyArray, callback) {
-    lazyArray[Symbol.iterator];
-    return forwardReverse(lazyArray, (iterator, _) => {
+function simpleHelper(lazyArray, callback) {
+    return forwardReverseHelper(lazyArray, (iterator, _) => {
         return cloneAccessor(iterator, callback);
     });
 }
 /** Applies the provided function to both forward and reverse iterators */
-function forwardReverse(lazyArray, func) {
+function forwardReverseHelper(lazyArray, func) {
     const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
-    const reverseNext = func(lazyArray[reverseIterator](), reverseIterator);
-    return la({
+    const reverseNext = func(lazyArray[R_ITER](), R_ITER);
+    return lazy({
         [Symbol.iterator]() {
             return { next: forwardNext };
         },
-        [reverseIterator]() {
+        [R_ITER]() {
             return { next: reverseNext };
         },
     });

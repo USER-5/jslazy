@@ -1,21 +1,23 @@
 import { it, expect } from "vitest";
-import { la } from "./array";
+import { lazy } from "./array";
 
 it("Should produce a series of values", () => {
-  const lazyArray = la([1, 2, 3]).collect();
+  const lazyArray = lazy([1, 2, 3]).collect();
   const regularArray = [1, 2, 3];
   expect(lazyArray).toEqual(regularArray);
 });
 
 it("Should filter out unwanted values", () => {
-  const lazyArray = la([1, 2, 3]).filter((v) => v != 2).collect();
+  const lazyArray = lazy([1, 2, 3])
+    .filter((v) => v != 2)
+    .collect();
   const regularArray = [1, 3];
   expect(lazyArray).toEqual(regularArray);
 });
 
 it("Should only process values as they are consumed", () => {
   let seen: number[] = [];
-  const lazyArray = la([1, 2, 3]).do((val) => seen.push(val));
+  const lazyArray = lazy([1, 2, 3]).do((val) => seen.push(val));
   let i = 1;
   for (let el of lazyArray) {
     expect(el).toBe(i);
@@ -25,7 +27,7 @@ it("Should only process values as they are consumed", () => {
 
 it("Should not process filtered elements later", () => {
   let seen: number[] = [];
-  const lazyArray = la([1, 2, 3])
+  const lazyArray = lazy([1, 2, 3])
     .filter((v) => v != 2)
     .do((val) => seen.push(val));
 
@@ -41,14 +43,16 @@ it("Should not process filtered elements later", () => {
 });
 
 it("Should Map Values", () => {
-  const lazyArray = la([1, 2, 3]).map((v) => v * 2).collect();
+  const lazyArray = lazy([1, 2, 3])
+    .map((v) => v * 2)
+    .collect();
 
   const regularArray = [2, 4, 6];
   expect(lazyArray).toEqual(regularArray);
 });
 
 it("Should Clone as Expected", () => {
-  const lazyArray = la([1, 2, 3]);
+  const lazyArray = lazy([1, 2, 3]);
   const lazyArray2 = lazyArray.map((v) => v * -1);
 
   const a1v1 = lazyArray[Symbol.iterator]().next().value;
@@ -58,13 +62,13 @@ it("Should Clone as Expected", () => {
 });
 
 it("Should Reverse Arrays", () => {
-  const lazyArray = la([1, 2, 3]).reverse().collect();
+  const lazyArray = lazy([1, 2, 3]).reverse().collect();
   const regularArray = [3, 2, 1];
   expect(lazyArray).toEqual(regularArray);
 });
 
 it("Should Reverse Arrays And Clone", () => {
-  const lazyArray1 = la([1, 2, 3]).reverse();
+  const lazyArray1 = lazy([1, 2, 3]).reverse();
   const lazyArray2 = lazyArray1.reverse();
   const lazyArray3 = lazyArray2.reverse();
 
@@ -78,17 +82,25 @@ it("Should Reverse Arrays And Clone", () => {
 });
 
 it("Should Flatten Arrays", () => {
-  const lazyArray = la([1, 2, 3])
-    .flatMap((v) => la([-1, -2, v]))
+  const lazyArray = lazy([1, 2, 3])
+    .flatMap((v) => lazy([-1, -2, v]))
     .collect();
   const regularArray = [-1, -2, 1, -1, -2, 2, -1, -2, 3];
   expect(lazyArray).toEqual(regularArray);
 });
 
 it("Should Flatten Arrays With Reversing", () => {
-  const lazyArray = la([10, 20, 30])
-    .flatMap((v) => la([-1, -2, v]).reverse())
+  const lazyArray = lazy([10, 20, 30])
+    .flatMap((v) => lazy([-1, -2, v]).reverse())
     .collect();
   const regularArray = [10, -2, -1, 20, -2, -1, 30, -2, -1];
   expect(lazyArray).toEqual(regularArray);
+});
+
+it("Should allow requesting a certain number of values", () => {
+  let seen = 0;
+  const lazyArray = lazy([1, 2, 3, 4]).do(() => seen++).limit(2).collect();
+  const regularArray = [1, 2];
+  expect(lazyArray).toEqual(regularArray);
+  expect(seen).toBe(2);
 });

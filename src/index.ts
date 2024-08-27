@@ -1,1 +1,1 @@
-export { la } from "./array";
+export { lazy } from "./array";
