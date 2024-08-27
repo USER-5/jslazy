@@ -1,4 +1,4 @@
-const R_ITER: unique symbol = Symbol.for("REVERSE ITERATOR")
+const R_ITER: unique symbol = Symbol.for("REVERSE ITERATOR");
 
 export type Mapper<T, R> = (value: T) => R;
 

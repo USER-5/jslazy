@@ -4,6 +4,10 @@
   "description": "Lazy Iterators",
   "main": "src/index.js",
   "types": "src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USER-5/lazyjs"
+  },
   "files": [
     "/dist"
   ],
@@ -13,7 +17,7 @@
     "build": "tsc"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.5.0",
     "prettier": "^3.3.3",
