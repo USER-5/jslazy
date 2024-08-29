@@ -1,16 +1,19 @@
 {
-  "name": "lazy",
+  "name": "jslazy",
   "version": "0.0.1",
   "description": "Lazy Iterators",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/USER-5/lazyjs"
   },
   "files": [
-    "/dist"
+    "dist"
   ],
+  "exports": {
+    "./": "./dist"
+  },
   "scripts": {
     "test": "vitest",
     "format": "prettier -w .",
