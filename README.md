@@ -1,4 +1,4 @@
-# Lazy JS
+# JS Lazy | The Missing Lazy Iterator Toolsuite
 
 🥱
 
@@ -8,7 +8,7 @@ As with all good libraries, this is _🔥bLAZILY Fast🔥_!
 
 Headline Features:
 
-- Fully Typed
+- Fully Typed (Despite the `js` prefix, this is written in typescript)
 - Implements Native JS Iterables
 - Reduced Memory Footprint
 
@@ -17,7 +17,7 @@ Headline Features:
 Take your current iterable data structure, and turn it into a `Lazy` iterable.
 
 ```ts
-import { lazy } from "lazy-js";
+import { lazy } from "jslazy";
 
 const myArray = ["I'm", "not", "doing", "anything", "today"];
 
