@@ -5,6 +5,7 @@ import { lazyFlatMap } from "./flatMap";
 import { isReversibleLazy, R_ITER, R_LAZY, } from "./iter";
 import { lazyLimit } from "./limit";
 import { lazyMap } from "./map";
+import { lazyTakeWhile } from "./takeWhile";
 /**
  * Creates a reversible lazy array from the source.
  *
@@ -41,6 +42,9 @@ export function lazy(source) {
         },
         limit(nValues) {
             return lazyLimit(this, nValues);
+        },
+        takeWhile(fn) {
+            return lazyTakeWhile(this, fn);
         },
         reverse() {
             return lazy({

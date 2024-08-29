@@ -1,6 +1,6 @@
 import { arrayToReverseIterator } from "./converters";
 import { lazyDo, type Action } from "./do";
-import { lazyFilter, type Predicate } from "./filter";
+import { lazyFilter } from "./filter";
 import { lazyFlatMap } from "./flatMap";
 import {
   isReversibleLazy,
@@ -10,6 +10,8 @@ import {
 } from "./iter";
 import { lazyLimit } from "./limit";
 import { lazyMap, type Mapper } from "./map";
+import type { Predicate } from "./predicate";
+import { lazyTakeWhile } from "./takeWhile";
 
 export type IntoReversibleLazy<T> =
   | (ReversibleIterable<T> & Iterable<T>)
@@ -36,6 +38,11 @@ export interface ReversibleLazy<T> extends Iterable<T>, ReversibleIterable<T> {
    * before reaching `nValues`, then this operator has no effect.
    */
   limit(nValues: number): ReversibleLazy<T>;
+  /**
+   * Passes through values until the predicate returns false, then terminates
+   * the iterator
+   */
+  takeWhile(predicate: Predicate<T>): ReversibleLazy<T>;
   /** Reverses the current lazy array. */
   reverse(): ReversibleLazy<T>;
   readonly [R_LAZY]: true;
@@ -85,6 +92,10 @@ export function lazy<T>(source: IntoReversibleLazy<T>): ReversibleLazy<T> {
 
     limit(nValues) {
       return lazyLimit(this, nValues);
+    },
+
+    takeWhile(fn) {
+      return lazyTakeWhile(this, fn);
     },
 
     reverse() {

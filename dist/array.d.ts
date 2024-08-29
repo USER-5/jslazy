@@ -1,7 +1,7 @@
 import { type Action } from "./do";
-import { type Predicate } from "./filter";
 import { R_LAZY, type ReversibleIterable } from "./iter";
 import { type Mapper } from "./map";
+import type { Predicate } from "./predicate";
 export type IntoReversibleLazy<T> = (ReversibleIterable<T> & Iterable<T>) | Array<T>;
 export interface ReversibleLazy<T> extends Iterable<T>, ReversibleIterable<T> {
     /** Filters out items which return 'false' when entered into the predicate */
@@ -24,6 +24,11 @@ export interface ReversibleLazy<T> extends Iterable<T>, ReversibleIterable<T> {
      * before reaching `nValues`, then this operator has no effect.
      */
     limit(nValues: number): ReversibleLazy<T>;
+    /**
+     * Passes through values until the predicate returns false, then terminates
+     * the iterator
+     */
+    takeWhile(predicate: Predicate<T>): ReversibleLazy<T>;
     /** Reverses the current lazy array. */
     reverse(): ReversibleLazy<T>;
     readonly [R_LAZY]: true;
