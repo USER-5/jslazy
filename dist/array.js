@@ -1,102 +1,46 @@
-const R_ITER = Symbol.for("REVERSE ITERATOR");
+import { arrayToReverseIterator } from "./converters";
+import { lazyDo } from "./do";
+import { lazyFilter } from "./filter";
+import { lazyFlatMap } from "./flatMap";
+import { isReversibleLazy, R_ITER, R_LAZY, } from "./iter";
+import { lazyLimit } from "./limit";
+import { lazyMap } from "./map";
 /**
- * Creates a lazy array from a standard array.
+ * Creates a reversible lazy array from the source.
  *
  * This is still in early development, and is subject to change.
  */
 export function lazy(source) {
+    // Allow pass-thru
+    if (isReversibleLazy(source)) {
+        return source;
+    }
     return {
         [Symbol.iterator]() {
-            return {
-                next: Array.isArray(source)
-                    ? arrayToIterator(source)
-                    : source[Symbol.iterator]().next,
-            };
+            return source[Symbol.iterator]();
         },
         [R_ITER]() {
-            return {
-                next: Array.isArray(source)
-                    ? arrayToReverseIterator(source)
-                    : source[R_ITER]().next,
-            };
+            return Array.isArray(source)
+                ? arrayToReverseIterator(source)
+                : source[R_ITER]();
         },
-        filter(filterFunction) {
-            return simpleHelper(this, (val) => ({
-                filter: filterFunction(val),
-                item: {
-                    done: false,
-                    value: val,
-                },
-            }));
+        // This flags that we have a fully-fledged reversible lazy iterator.
+        // Including the functions below (not just that we have the two iterators above)
+        [R_LAZY]: true,
+        filter(fn) {
+            return lazyFilter(this, fn);
         },
-        do(action) {
-            return simpleHelper(this, (val) => {
-                action(val);
-                return {
-                    item: {
-                        done: false,
-                        value: val,
-                    },
-                };
-            });
+        do(fn) {
+            return lazyDo(this, fn);
         },
-        map(mapper) {
-            return simpleHelper(this, (val) => ({
-                item: {
-                    done: false,
-                    value: mapper(val),
-                },
-            }));
+        map(fn) {
+            return lazyMap(this, fn);
         },
-        flatMap(mapper) {
-            return forwardReverseHelper(this, (iterator, prop) => {
-                let subIterator = null;
-                return () => {
-                    while (true) {
-                        // Get next subiterator
-                        if (!subIterator) {
-                            const subIteratorResult = iterator.next();
-                            if (subIteratorResult.done === false) {
-                                subIterator = mapper(subIteratorResult.value)[prop]();
-                            }
-                            else {
-                                return {
-                                    done: true,
-                                    value: undefined,
-                                };
-                            }
-                        }
-                        const nextValue = subIterator.next();
-                        if (nextValue.done === true) {
-                            subIterator = null;
-                            continue;
-                        }
-                        else {
-                            return {
-                                done: false,
-                                value: nextValue.value,
-                            };
-                        }
-                    }
-                };
-            });
+        flatMap(fn) {
+            return lazyFlatMap(this, fn);
         },
         limit(nValues) {
-            let nSeen = 0;
-            return forwardReverseHelper(this, (iterator) => {
-                return () => {
-                    if (nSeen < nValues) {
-                        nSeen += 1;
-                        return iterator.next();
-                    }
-                    else {
-                        return {
-                            done: true,
-                            value: undefined,
-                        };
-                    }
-                };
-            });
+            return lazyLimit(this, nValues);
         },
         reverse() {
             return lazy({
@@ -108,74 +52,5 @@ export function lazy(source) {
             return Array.from(this);
         },
     };
-}
-function arrayToIterator(arr) {
-    let index = 0;
-    return () => {
-        if (arr.length == index) {
-            return {
-                done: true,
-                value: undefined,
-            };
-        }
-        else {
-            return {
-                value: arr[index++],
-                done: false,
-            };
-        }
-    };
-}
-function arrayToReverseIterator(arr) {
-    let index = 0;
-    return () => {
-        if (arr.length == index) {
-            return {
-                done: true,
-                value: undefined,
-            };
-        }
-        else {
-            return {
-                value: arr[arr.length - index++ - 1],
-                done: false,
-            };
-        }
-    };
-}
-function simpleHelper(lazyArray, callback) {
-    return forwardReverseHelper(lazyArray, (iterator, _) => {
-        return cloneAccessor(iterator, callback);
-    });
-}
-/** Applies the provided function to both forward and reverse iterators */
-function forwardReverseHelper(lazyArray, func) {
-    const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
-    const reverseNext = func(lazyArray[R_ITER](), R_ITER);
-    return lazy({
-        [Symbol.iterator]() {
-            return { next: forwardNext };
-        },
-        [R_ITER]() {
-            return { next: reverseNext };
-        },
-    });
-}
-function cloneAccessor(iterator, callback) {
-    const next = () => {
-        // Consume the parent at consumption time
-        while (true) {
-            const parentNext = iterator.next();
-            if (parentNext.done === true) {
-                return parentNext;
-            }
-            const callbackVal = callback(parentNext.value);
-            // If filter is defined, and false, then the item is omitted
-            if (callbackVal.filter === undefined || callbackVal.filter === true) {
-                return callbackVal.item;
-            }
-        }
-    };
-    return next;
 }
 //# sourceMappingURL=array.js.map

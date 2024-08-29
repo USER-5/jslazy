@@ -107,3 +107,11 @@ it("Should allow requesting a certain number of values", () => {
   expect(lazyArray).toEqual(regularArray);
   expect(seen).toBe(2);
 });
+
+it("Should allow flatMap with standard arrays", () => {
+  const lazyArray = lazy([10, 20, 30])
+    .flatMap((v) => [-1, -2, v])
+    .collect();
+  const regularArray = [-1, -2, 10, -1, -2, 20, -1, -2, 30];
+  expect(lazyArray).toEqual(regularArray);
+});
