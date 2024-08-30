@@ -25,4 +25,3 @@ it("Should not process filtered elements later", () => {
 
   expect(seen.length).toBe(2);
 });
-

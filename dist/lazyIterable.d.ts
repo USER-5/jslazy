@@ -85,7 +85,7 @@ export interface LazyIterable<T> extends Iterable<T> {
      * the iterator.
      *
      * Note that this must pull the failing value through the chain in order to
-     * evalutate it.
+     * evaluate it.
      *
      * ## Example
      *
@@ -107,6 +107,48 @@ export interface LazyIterable<T> extends Iterable<T> {
      *   returns false, the value is not emitted, and the iterator terminates.
      */
     takeWhile(predicate: Predicate<T>): LazyIterable<T>;
+    /**
+     * Passes through values until the predicate returns true, then terminates the
+     * iterator.
+     *
+     * Note that this must pull the succeeding value through the chain in order to
+     * evaluate it.
+     *
+     * ## Example
+     *
+     * ```ts
+     * let seenBefore = 0;
+     * let seenAfter = 0;
+     * const lazyArray = lazy([1, 2, 3, 4, 5, 6])
+     *   .do(() => seenBefore++)
+     *   .takeUntil((v) => v > 3)
+     *   .do(() => seenAfter++)
+     *   .collect();
+     *
+     * lazyArray === [1, 2, 3]; // 4 is the first value > 3, so the rest is omitted
+     * seenBefore === 3; // We had to evaluate 4 items
+     * seenAfter === 2; // 3 items were emitted after the `takeUntil` operator
+     * ```
+     *
+     * @param predicate A function applied to each value in-turn. If this function
+     *   returns true, the value is not emitted, and the iterator terminates.
+     */
+    takeUntil(predicate: Predicate<T>): LazyIterable<T>;
+    /**
+     * Returns whether any value in the iterable returns true for the predicate,
+     * exiting early if possible.
+     *
+     * This consumes values in order to produces its output, up until the
+     * predicate returns true, or the iterable is exhausted.
+     *
+     * @param predicate A function that is executed on values produced by the
+     *   iterable. If this returns true for any value, the operator exits and
+     *   returns true.
+     * @returns True if the predicate was true for any value in the iterable,
+     *   False if the iterable exhausted without the predicate producing a truthy
+     *   result
+     */
+    any(predicate: Predicate<T>): boolean;
     readonly [LAZY_FLAG]: true;
 }
 /**

@@ -9,7 +9,7 @@ it("Should produce a series of values", () => {
 
 it("Should only process values as they are consumed", () => {
   let seen: number[] = [];
-  let a = {"A": "ABC","B": "BCD"};
+  let a = { A: "ABC", B: "BCD" };
   const lazyArray = lazy([1, 2, 3]).do((val) => seen.push(val));
   let i = 1;
   for (let el of lazyArray) {
@@ -17,5 +17,3 @@ it("Should only process values as they are consumed", () => {
     expect(seen.length).toBe(i++);
   }
 });
-
-

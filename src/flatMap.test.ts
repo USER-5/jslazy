@@ -24,4 +24,3 @@ it("Should allow flatMap with standard arrays", () => {
   const regularArray = [-1, -2, 10, -1, -2, 20, -1, -2, 30];
   expect(lazyArray).toEqual(regularArray);
 });
-

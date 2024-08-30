@@ -4,6 +4,8 @@ import { lazyFlatMap } from "./flatMap";
 import { lazyLimit } from "./limit";
 import { lazyMap } from "./map";
 import { lazyTakeWhile } from "./takeWhile";
+import { lazyAny } from "./any";
+import { lazyTakeUntil } from "./takeUntil";
 // This should NOT be exported
 const LAZY_FLAG = Symbol();
 /**
@@ -49,8 +51,14 @@ export function lazyIterable(source) {
         takeWhile(fn) {
             return lazyTakeWhile(this, fn);
         },
+        takeUntil(fn) {
+            return lazyTakeUntil(this, fn);
+        },
         collect() {
             return Array.from(this);
+        },
+        any(fn) {
+            return lazyAny(this, fn);
         },
     };
 }
