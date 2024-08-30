@@ -6,6 +6,12 @@ import { lazyMap } from "./map";
 import { lazyTakeWhile } from "./takeWhile";
 // This should NOT be exported
 const LAZY_FLAG = Symbol();
+/**
+ * Determines whether the provided iterable is a LazyIterable.
+ *
+ * Note: A `ReversibleLazyIterable` will pass this check, as it's an extension
+ * of `LazyIterable`
+ */
 export function isLazy(val) {
     return LAZY_FLAG in val && val[LAZY_FLAG] === true;
 }

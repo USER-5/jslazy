@@ -2,9 +2,11 @@ import { isLazy, lazyIterable } from "./lazyIterable";
 // These should NOT be exported
 const R_ITER = Symbol();
 const R_LAZY = Symbol();
+/** Determines whether an iterable is compatible with `IntoReversibleLazy` */
 export function isIntoReversibleLazy(val) {
     return isReversibleLazy(val) || Array.isArray(val);
 }
+/** Determines whether an iterable is a `ReversibleLazyIterable`. */
 export function isReversibleLazy(val) {
     return isLazy(val) && R_LAZY in val && val[R_LAZY] === true;
 }

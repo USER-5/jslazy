@@ -4,39 +4,46 @@ import { type LazyIterable } from "./lazyIterable";
 import type { Mapper } from "./map";
 declare const R_ITER: unique symbol;
 declare const R_LAZY: unique symbol;
+/**
+ * Represents the union of types that we can convert into a
+ * `ReversibleLazyIterable`
+ *
+ * Either:
+ *
+ * 1. A JS `Array` of elements, or
+ * 2. Something which implements both the `Iterable` interface, and the
+ *    `ReversibleIterable` interface. - that is, it contains two iterators.
+ */
 export type IntoReversibleLazy<T> = (ReversibleIterable<T> & Iterable<T>) | Array<T>;
 export interface ReversibleIterable<T> {
     [R_ITER](): Iterator<T>;
 }
+/** Determines whether an iterable is compatible with `IntoReversibleLazy` */
 export declare function isIntoReversibleLazy<T>(val: Iterable<T>): val is IntoReversibleLazy<T>;
+/** Determines whether an iterable is a `ReversibleLazyIterable`. */
 export declare function isReversibleLazy<T>(val: Iterable<T>): val is ReversibleLazyIterable<T>;
+/**
+ * A lazily evaluated iterable, which is lazily reversable.
+ *
+ * This is the core type for the _jslazy_ library, along with `LazyIterable`.
+ * The library will return a `ReversibleLazyIterable` if possible.
+ *
+ * `ReversibleLazyIterables`, as their name suggests, are lazily evaluated, and
+ * must be _consumed_ in order to perform work.
+ */
 export interface ReversibleLazyIterable<T> extends ReversibleIterable<T>, LazyIterable<T> {
-    /** Filters out items which return 'false' when entered into the predicate */
     filter(predicate: Predicate<T>): ReversibleLazyIterable<T>;
-    /** Maps each value into a different value */
     map<V>(mapper: Mapper<T, V>): ReversibleLazyIterable<V>;
-    /** Flattens each item of the contained lazy arrays */
     flatMap<V, MapperIter extends Iterable<V>>(mapper: Mapper<T, MapperIter>): MapperIter extends IntoReversibleLazy<V> ? ReversibleLazyIterable<V> : LazyIterable<V>;
-    /**
-     * Runs the provided action on each item when the item is processed.
-     *
-     * Note that since this is lazy, the items will need to be "pulled through"
-     * the iterator.
-     */
     do(action: Action<T>): ReversibleLazyIterable<T>;
-    /** Collects the current array into a standard array */
     collect(): Array<T>;
-    /**
-     * Limits the number of values to _at most_ `nValues`. If the array ends
-     * before reaching `nValues`, then this operator has no effect.
-     */
     limit(nValues: number): ReversibleLazyIterable<T>;
-    /**
-     * Passes through values until the predicate returns false, then terminates
-     * the iterator
-     */
     takeWhile(predicate: Predicate<T>): ReversibleLazyIterable<T>;
-    /** Reverses the current lazy array. */
+    /**
+     * Reverses the iterable
+     *
+     * This is non-mutating, and lazy.
+     */
     reverse(): ReversibleLazyIterable<T>;
     readonly [R_LAZY]: true;
 }
