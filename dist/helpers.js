@@ -1,21 +1,8 @@
-import { lazy } from "./array";
-import { R_ITER } from "./iter";
+import { reverseHelper, } from "./reversibleLazyIterable";
+/** A simple helper, useful for implementing basic operators */
 export function simpleHelper(lazyArray, callback) {
-    return forwardReverseHelper(lazyArray, (iterator, _) => {
+    return reverseHelper(lazyArray, (iterator, _) => {
         return cloneAccessor(iterator, callback);
-    });
-}
-/** Applies the provided function to both forward and reverse iterators */
-export function forwardReverseHelper(lazyArray, func) {
-    const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
-    const reverseNext = func(lazyArray[R_ITER](), R_ITER);
-    return lazy({
-        [Symbol.iterator]() {
-            return { next: forwardNext };
-        },
-        [R_ITER]() {
-            return { next: reverseNext };
-        },
     });
 }
 /**

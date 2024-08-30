@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { lazy } from "./lazyIterable";
+import { lazy } from "./index";
 
 it("Should produce a series of values", () => {
   const lazyArray = lazy([1, 2, 3]).collect();

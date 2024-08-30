@@ -1,3 +1,3 @@
-import type { ReversibleLazy } from "./array";
-import type { Predicate } from "./predicate";
-export declare function lazyTakeWhile<T>(lazyIterable: ReversibleLazy<T>, predicate: Predicate<T>): ReversibleLazy<T>;
+import type { Predicate } from "./filter";
+import type { LazyIterable } from "./lazyIterable";
+export declare function lazyTakeWhile<Item, Iter extends LazyIterable<Item>>(lazyIterable: Iter, predicate: Predicate<Item>): Iter;

@@ -1,7 +1,7 @@
-import { lazy } from "./array";
-import { forwardReverseHelper } from "./helpers";
+import { lazyIterable } from "./lazyIterable";
+import { isReversibleLazy, reverseHelper, rLazyIterable, } from "./reversibleLazyIterable";
 export function lazyFlatMap(lazyArray, fn) {
-    return forwardReverseHelper(lazyArray, (iterator, prop) => {
+    return reverseHelper(lazyArray, (iterator, prop) => {
         // We switch this out each time we exhaust an inner iterable
         let childIterator = null;
         return () => {
@@ -10,7 +10,13 @@ export function lazyFlatMap(lazyArray, fn) {
                     // Get next child iterator from parent
                     const subIteratorResult = iterator.next();
                     if (subIteratorResult.done === false) {
-                        childIterator = lazy(fn(subIteratorResult.value))[prop]();
+                        const child = fn(subIteratorResult.value);
+                        if (isReversibleLazy(child)) {
+                            childIterator = rLazyIterable(child)[prop]();
+                        }
+                        else {
+                            childIterator = lazyIterable(child)[Symbol.iterator]();
+                        }
                     }
                     else {
                         // We have run out of parent values. Time to terminate

@@ -1,1 +1,1 @@
-export { lazy } from "./lazyIterable";
+export { lazy } from "./lazy";

@@ -1,16 +1,24 @@
-import type { ReversibleLazy } from "./array";
 import { simpleHelper } from "./helpers";
+import type { LazyIterable } from "./lazyIterable";
+import type { ReversibleLazyIterable } from "./reversibleLazyIterable";
 
 export type Mapper<T, R> = (value: T) => R;
 
-export function lazyMap<T, R>(
-  lazyArray: ReversibleLazy<T>,
-  mapper: Mapper<T, R>,
-): ReversibleLazy<R> {
-  return simpleHelper(lazyArray, (val) => ({
-    item: {
-      done: false,
-      value: mapper(val),
-    },
-  }));
+export function lazyMap<
+  InItem,
+  OutItem,
+  InIterable extends LazyIterable<InItem>,
+  OutIterable = InIterable extends ReversibleLazyIterable<InItem>
+    ? ReversibleLazyIterable<OutItem>
+    : LazyIterable<OutItem>,
+>(lazyArray: InIterable, mapper: Mapper<InItem, OutItem>): OutIterable {
+  return simpleHelper<InItem, OutItem, InIterable, OutIterable>(
+    lazyArray,
+    (val) => ({
+      item: {
+        done: false,
+        value: mapper(val),
+      },
+    }),
+  );
 }

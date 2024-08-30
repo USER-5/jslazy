@@ -42,3 +42,20 @@ for (const word of myReversedArray) {
 }
 // = today, anything, doing, not, I'm
 ```
+
+## Operators
+
+### Filter
+
+Given a predicate, removes items that return false.
+
+```ts
+const myLazy = lazy([1, 2, "hello", null, 4, 5.6]);
+// Remove any items that aren't an integer
+const output = myLazy
+  .filter((value) => Number.isInteger(value))
+  // Consume items to trigger the filter
+  .collect();
+
+// = [1, 2, 4];
+```

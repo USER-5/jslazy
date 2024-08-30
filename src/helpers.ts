@@ -1,33 +1,27 @@
-import { lazy, type ReversibleLazy } from "./array";
-import { R_ITER } from "./iter";
+import type { LazyIterable } from "./lazyIterable";
+import {
+  reverseHelper,
+  type ReversibleLazyIterable,
+} from "./reversibleLazyIterable";
 
-export function simpleHelper<T, R>(
-  lazyArray: ReversibleLazy<T>,
-  callback: (val: T) => AccessorResult<R>,
-): ReversibleLazy<R> {
-  return forwardReverseHelper(lazyArray, (iterator, _) => {
-    return cloneAccessor(iterator, callback);
-  });
-}
-
-/** Applies the provided function to both forward and reverse iterators */
-export function forwardReverseHelper<T, V>(
-  lazyArray: ReversibleLazy<T>,
-  func: (
-    it: Iterator<T>,
-    iteratorProp: typeof R_ITER | typeof Symbol.iterator,
-  ) => () => IteratorResult<V>,
-): ReversibleLazy<V> {
-  const forwardNext = func(lazyArray[Symbol.iterator](), Symbol.iterator);
-  const reverseNext = func(lazyArray[R_ITER](), R_ITER);
-  return lazy({
-    [Symbol.iterator]() {
-      return { next: forwardNext };
+/** A simple helper, useful for implementing basic operators */
+export function simpleHelper<
+  InItem,
+  OutItem,
+  InIterable extends LazyIterable<InItem>,
+  OutIterable = InIterable extends ReversibleLazyIterable<InItem>
+    ? ReversibleLazyIterable<OutItem>
+    : LazyIterable<OutItem>,
+>(
+  lazyArray: InIterable,
+  callback: (val: InItem) => AccessorResult<OutItem>,
+): OutIterable {
+  return reverseHelper<InItem, OutItem, InIterable, OutIterable>(
+    lazyArray,
+    (iterator, _) => {
+      return cloneAccessor(iterator, callback);
     },
-    [R_ITER]() {
-      return { next: reverseNext };
-    },
-  });
+  );
 }
 
 export type AccessorResult<T> = {
@@ -41,11 +35,11 @@ export type AccessorResult<T> = {
  *
  * This can be used to filter and map values.
  */
-export function cloneAccessor<T, R>(
-  iterator: Iterator<T>,
-  callback: (val: T) => AccessorResult<R>,
-): () => IteratorResult<R> {
-  const next: () => IteratorResult<R> = () => {
+export function cloneAccessor<InItem, OutItem, Iter extends Iterator<InItem>>(
+  iterator: Iter,
+  callback: (val: InItem) => AccessorResult<OutItem>,
+): () => IteratorResult<OutItem> {
+  const next: () => IteratorResult<OutItem> = () => {
     // Consume the parent at consumption time
     while (true) {
       const parentNext = iterator.next();

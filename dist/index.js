@@ -1,2 +1,2 @@
-export { lazy } from "./array";
+export { lazy } from "./lazy";
 //# sourceMappingURL=index.js.map

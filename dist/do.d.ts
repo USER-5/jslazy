@@ -1,3 +1,3 @@
-import type { ReversibleLazy } from "./array";
-export type Action<T> = (value: T) => void;
-export declare function lazyDo<T>(lazyArray: ReversibleLazy<T>, action: Action<T>): ReversibleLazy<T>;
+import type { LazyIterable } from "./lazyIterable";
+export type Action<Item> = (value: Item) => void;
+export declare function lazyDo<InItem, Iterable extends LazyIterable<InItem>>(lazyArray: Iterable, action: Action<InItem>): Iterable;

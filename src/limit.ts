@@ -1,12 +1,12 @@
-import type { ReversibleLazy } from "./array";
-import { forwardReverseHelper } from "./helpers";
+import type { LazyIterable } from "./lazyIterable";
+import { reverseHelper } from "./reversibleLazyIterable";
 
-export function lazyLimit<T>(
-  lazyIterator: ReversibleLazy<T>,
+export function lazyLimit<Item, Iterable extends LazyIterable<Item>>(
+  lazyIterator: Iterable,
   nValues: number,
-): ReversibleLazy<T> {
+): Iterable {
   let nSeen = 0;
-  return forwardReverseHelper(lazyIterator, (iterator) => {
+  return reverseHelper(lazyIterator, (iterator) => {
     return () => {
       if (nSeen < nValues) {
         nSeen += 1;

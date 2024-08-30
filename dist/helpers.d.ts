@@ -1,8 +1,7 @@
-import { type ReversibleLazy } from "./array";
-import { R_ITER } from "./iter";
-export declare function simpleHelper<T, R>(lazyArray: ReversibleLazy<T>, callback: (val: T) => AccessorResult<R>): ReversibleLazy<R>;
-/** Applies the provided function to both forward and reverse iterators */
-export declare function forwardReverseHelper<T, V>(lazyArray: ReversibleLazy<T>, func: (it: Iterator<T>, iteratorProp: typeof R_ITER | typeof Symbol.iterator) => () => IteratorResult<V>): ReversibleLazy<V>;
+import type { LazyIterable } from "./lazyIterable";
+import { type ReversibleLazyIterable } from "./reversibleLazyIterable";
+/** A simple helper, useful for implementing basic operators */
+export declare function simpleHelper<InItem, OutItem, InIterable extends LazyIterable<InItem>, OutIterable = InIterable extends ReversibleLazyIterable<InItem> ? ReversibleLazyIterable<OutItem> : LazyIterable<OutItem>>(lazyArray: InIterable, callback: (val: InItem) => AccessorResult<OutItem>): OutIterable;
 export type AccessorResult<T> = {
     filter?: boolean;
     item: IteratorResult<T>;
@@ -13,4 +12,4 @@ export type AccessorResult<T> = {
  *
  * This can be used to filter and map values.
  */
-export declare function cloneAccessor<T, R>(iterator: Iterator<T>, callback: (val: T) => AccessorResult<R>): () => IteratorResult<R>;
+export declare function cloneAccessor<InItem, OutItem, Iter extends Iterator<InItem>>(iterator: Iter, callback: (val: InItem) => AccessorResult<OutItem>): () => IteratorResult<OutItem>;

@@ -1,13 +1,13 @@
-import type { ReversibleLazy } from "./array";
 import { simpleHelper } from "./helpers";
+import type { LazyIterable } from "./lazyIterable";
 
-export type Action<T> = (value: T) => void;
+export type Action<Item> = (value: Item) => void;
 
-export function lazyDo<T>(
-  lazyArray: ReversibleLazy<T>,
-  action: Action<T>,
-): ReversibleLazy<T> {
-  return simpleHelper(lazyArray, (val) => {
+export function lazyDo<InItem, Iterable extends LazyIterable<InItem>>(
+  lazyArray: Iterable,
+  action: Action<InItem>,
+): Iterable {
+  return simpleHelper<InItem, InItem, Iterable, Iterable>(lazyArray, (val) => {
     action(val);
     return {
       item: {

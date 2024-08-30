@@ -1,7 +1,7 @@
-import { forwardReverseHelper } from "./helpers";
+import { reverseHelper } from "./reversibleLazyIterable";
 export function lazyLimit(lazyIterator, nValues) {
     let nSeen = 0;
-    return forwardReverseHelper(lazyIterator, (iterator) => {
+    return reverseHelper(lazyIterator, (iterator) => {
         return () => {
             if (nSeen < nValues) {
                 nSeen += 1;
