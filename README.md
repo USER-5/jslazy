@@ -148,6 +148,8 @@ const limitedArray = lazy([1, 2, 3, 4])
 Executes a predicate on each value, and terminates the iterator as soon as the
 predicate returns false.
 
+_The opposite of `TakeUntil`_
+
 Note that this needs to consume a failing value in order to know that it needs
 to terminate, so the number of consumed values will be one greater than the
 number of produced values (unlike `limit` which doesn't need to consume an extra
@@ -169,6 +171,56 @@ const lazyArray = lazy([1, 2, "hi", 4, 5])
 
 // 2 items were emitted after the `takeWhile` operator
 // seenAfter === 2;
+```
+
+### TakeUntil
+
+Executes a predicate on each value, and terminates the iterator as soon as the
+predicate returns true.
+
+_The opposite of `TakeWhile`_
+
+Note that this needs to consume a successful value in order to know that it
+needs to terminate, so the number of consumed values will be one greater than
+the number of produced values (unlike `limit` which doesn't need to consume an
+extra value).
+
+```ts
+let seenBefore = 0;
+let seenAfter = 0;
+const lazyArray = lazy([1, 2, 3, 4, 5, 6])
+  .do(() => seenBefore++)
+  .takeUntil((v) => v > 3)
+  .do(() => seenAfter++)
+  .collect();
+// 4 is the first value > 3, so it is omitted
+// lazyArray === [1, 2, 3];
+
+// We had to evaluate 4 items
+// seenBefore === 3;
+
+// 3 items were emitted after the `takeUntil` operator
+// seenAfter === 2;
+```
+
+### Any
+
+Returns true if the predicate returns true for any value in the iterable,
+otherwise returns false.
+
+This operation consumes value, and exits early (if possible).
+
+```ts
+let seen = 0;
+const anyEven = lazy([1, 2, 3])
+  .do((v) => seen++)
+  // isEven check
+  .any((v) => v % 2 === 0);
+
+// anyEven === true
+
+// We shouldn't need to evaluate 3, since 2 is even
+// seen === 2
 ```
 
 ## LazyIterable and ReversibleLazyIterable
