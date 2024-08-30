@@ -29,21 +29,38 @@ const myUppercaseLazyArray = myLazyArray
   .map((word) => word.toUpperCase())
   .limit(4);
 
-// Reverse without mutating
-const myReversedArray = myLazyArray.reverse();
-
 // Code is executed when the lazy array is consumed:
 const backToRegularArray = myUppercaseLazyArray.collect();
-// = ["I'M", "NOT", "DOING", "ANYTHING"]
+
+// backToRegularArray === ["I'M", "NOT", "DOING", "ANYTHING"]
+
+// Reverse without mutating
+const myReversedArray = myLazyArray.reverse();
 
 // Lazy iterators can be looped over as well:
 for (const word of myReversedArray) {
   console.log(word);
 }
-// = today, anything, doing, not, I'm
+// prints: today, anything, doing, not, I'm
 ```
 
 ## Operators
+
+### Do
+
+Given an action, executes the action on each value, but does not modify the
+value. This is not designed to modify values (though that's possible), but
+mostly for debugging purposes.
+
+```ts
+const lazyArray = lazy([1, 2, 3])
+  .do((val) => console.log("Received: " + val))
+  .collect();
+// Prints:
+//  Received: 1
+//  Received: 2
+//  Received: 3
+```
 
 ### Filter
 
@@ -58,4 +75,132 @@ const output = myLazy
   .collect();
 
 // = [1, 2, 4];
+```
+
+### Map
+
+Executes the mapping function on each value, and propogates the returned value.
+
+```ts
+const lazyArray = lazy([1, 2, 3])
+  .map((v) => v * 2)
+  .collect();
+
+// lazyArray = [2, 4, 6]
+```
+
+### FlatMap
+
+Maps, and flattens the returned iterables into a single iterable.
+
+The value returned from the provided mapping function can be any iterable (be it
+`LazyIterable`, `Set`, `Object.entries()`, or `Array`), and jslazy will convert
+it into a lazy one.
+
+```ts
+const people = lazy([
+  {
+    name: "John",
+    children: ["James", "Jacob"],
+  },
+  {
+    name: "Alice",
+    children: ["Amber", "Alex"],
+  },
+]);
+// For each person, we want to extract the children, and flatten that into a 1D iterable
+const childNames = people.flatMap((person) => person.children).collect();
+// childNames === ["James", "Jacob", "Amber", "Alex"];
+```
+
+### Reverse
+
+**Only applies to ReversibleLazyIterables**
+
+Reverses the iterator's order. This is still a lazy operation, but can only be
+performed on `ReversibleLazyIterables`. The library prefers to return
+`ReversibleLazyIterables` where possible; that is, when convertint either other
+`ReversibleLazyIterables`, or `Array`s.
+
+```ts
+const reversedNumbers = lazy([1, 2, 3]).reverse().collect();
+// reversedNumbers === [3, 2, 1];
+```
+
+### Limit
+
+Returns **at most** nValues values. If the iterator is exhausted before this
+value is reached, this operation does nothing.
+
+```ts
+let seen = 0;
+const limitedArray = lazy([1, 2, 3, 4])
+  .do(() => seen++)
+  .limit(2)
+  .collect();
+
+// limitedArray === [1,2]
+// seen === 2
+```
+
+### TakeWhile
+
+Executes a predicate on each value, and terminates the iterator as soon as the
+predicate returns false.
+
+Note that this needs to consume a failing value in order to know that it needs
+to terminate, so the number of consumed values will be one greater than the
+number of produced values (unlike `limit` which doesn't need to consume an extra
+value).
+
+```ts
+let seenBefore = 0;
+let seenAfter = 0;
+const lazyArray = lazy([1, 2, "hi", 4, 5])
+  .do(() => seenBefore++)
+  .takeWhile((v) => Number.isInteger(v))
+  .do(() => seenAfter++)
+  .collect();
+// "hi" failed, so the rest is omitted
+// lazyArray === [1, 2];
+
+// We had to evaluate 3 items
+// seenBefore === 3;
+
+// 2 items were emitted after the `takeWhile` operator
+// seenAfter === 2;
+```
+
+## LazyIterable and ReversibleLazyIterable
+
+There are two core types to this library: `LazyIterable`, and
+`ReversibleLazyIterable`. Ideally, you will be always dealing with a
+`ReversibleLazyIterable`, as that is an extension of the `LazyIterable` type.
+This enables lazy reversing of the iterable.
+
+You will end up with a non-reversible `LazyIterable` if you provide a
+non-reversible `Iterable` to the `lazy` function.
+
+There are two main cases where you will end up with a non-reversible
+`LazyIterable`:
+
+1. You have an infinite iterable (and therefore it has no 'end' to point at for
+   the reverse)
+2. You have an iterable that is already lazy, but not from this library e.g.
+   `Object.keys()`, or `new Set(1,2,3)`
+
+In the first case, we cannot support reversing. For the second case, it's likely
+best to stick with a non-reversible `LazyIterable`, unless you really want a
+reversible iterable, in which case you can convert it into an array first.
+
+```ts
+const notableNumbersObj = {
+  favourite: 123,
+  daysInApril: 30,
+  zero: 0,
+};
+// But honestly, why does the order matter here?
+const notableNumbersIter = Object.values(notableNumbersObj);
+const reversibleLazy = lazy(Array.from(notableNumbersIter)).reverse();
+// reversibleLazy.collect() === [0, 30, 123];
 ```
