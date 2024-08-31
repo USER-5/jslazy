@@ -1,5 +1,5 @@
 import { simpleHelper } from "./helpers";
-import type { LazyIterable } from "./lazyIterable";
+import type { LazyIterable } from "./index";
 
 export type Action<Item> = (value: Item) => void;
 

@@ -1,10 +1,10 @@
-import { lazyIterable, type LazyIterable } from "./lazyIterable";
-import {
-  isIntoReversibleLazy,
-  rLazyIterable,
-  type IntoReversibleLazy,
-  type ReversibleLazyIterable,
-} from "./reversibleLazyIterable";
+import { lazyIterable } from "./forwardLazyIterable";
+import type {
+  LazyIterable,
+  IntoReversibleLazy,
+  ReversibleLazyIterable,
+} from "./index";
+import { isIntoReversibleLazy, rLazyIterable } from "./lazyIterable";
 
 /**
  * Construct a lazy iterable from an existing iterable

@@ -1,250 +1,155 @@
-import { lazyDo, type Action } from "./do";
-import { lazyFilter } from "./filter";
-import { lazyFlatMap } from "./flatMap";
-import { lazyLimit } from "./limit";
-import { lazyMap, type Mapper } from "./map";
+import type { Action } from "./do";
 import type { Predicate } from "./filter";
-import { lazyTakeWhile } from "./takeWhile";
-import { lazyAny } from "./any";
-import { lazyTakeUntil } from "./takeUntil";
-import { lazyAll } from "./all";
+import { isLazy, type LazyIterable } from "./index";
+import { lazyIterable } from "./forwardLazyIterable";
+import type { Mapper } from "./map";
 
-// This should NOT be exported
-const LAZY_FLAG: unique symbol = Symbol();
+// These should NOT be exported
+const R_ITER: unique symbol = Symbol();
+const R_LAZY: unique symbol = Symbol();
 
 /**
- * Determines whether the provided iterable is a LazyIterable.
+ * Represents the union of types that we can convert into a
+ * `ReversibleLazyIterable`
  *
- * Note: A `ReversibleLazyIterable` will pass this check, as it's an extension
- * of `LazyIterable`
+ * Either:
+ *
+ * 1. A JS `Array` of elements, or
+ * 2. Something which implements both the `Iterable` interface, and the
+ *    `ReversibleIterable` interface. - that is, it contains two iterators.
  */
-export function isLazy<T>(val: Iterable<T>): val is LazyIterable<T> {
-  return LAZY_FLAG in val && val[LAZY_FLAG] === true;
+export type IntoReversibleLazy<T> =
+  | (ReversibleIterable<T> & Iterable<T>)
+  | Array<T>;
+
+export interface ReversibleIterable<T> {
+  [R_ITER](): Iterator<T>;
+}
+
+/** Determines whether an iterable is compatible with `IntoReversibleLazy` */
+export function isIntoReversibleLazy<T>(
+  val: Iterable<T>,
+): val is IntoReversibleLazy<T> {
+  return isReversibleLazy(val) || Array.isArray(val);
+}
+
+/** Determines whether an iterable is a `ReversibleLazyIterable`. */
+export function isReversibleLazy<T>(
+  val: Iterable<T>,
+): val is ReversibleLazyIterable<T> {
+  return isLazy(val) && R_LAZY in val && val[R_LAZY] === true;
 }
 
 /**
- * A lazily evaluated iterable.
+ * A lazily evaluated iterable, which is lazily reversable.
  *
- * This is the core type for the _jslazy_ library, along with
- * `ReversibleLazyIterable`.
+ * This is the core type for the _jslazy_ library, along with `LazyIterable`.
+ * The library will return a `ReversibleLazyIterable` if possible.
  *
- * `LazyIterables`, as their name suggests, are lazily evaluated, and must be
- * _consumed_ in order to perform work.
+ * `ReversibleLazyIterables`, as their name suggests, are lazily evaluated, and
+ * must be _consumed_ in order to perform work.
  */
-export interface LazyIterable<T> extends Iterable<T> {
-  /**
-   * Filters out items which return 'false' when entered into the predicate.
-   *
-   * @param predicate A function applied to each value in-turn. If this function
-   *   returns false, the value is omitted from the downstream iterable
-   */
-  filter(predicate: Predicate<T>): LazyIterable<T>;
-  /**
-   * Maps each value into a different value.
-   *
-   * @param mapper A function applied to each value in-turn. The return value of
-   *   this function becomes the downstream iterable's value.
-   */
-  map<V>(mapper: Mapper<T, V>): LazyIterable<V>;
+export interface ReversibleLazyIterable<T>
+  extends ReversibleIterable<T>,
+    LazyIterable<T> {
+  filter(predicate: Predicate<T>): ReversibleLazyIterable<T>;
 
-  /**
-   * Flattens each item of the contained lazy arrays.
-   *
-   * ## Example
-   *
-   * ```ts
-   * const people = lazy([
-   *   {
-   *     name: "John",
-   *     children: ["James", "Jacob"],
-   *   },
-   *   {
-   *     name: "Alice",
-   *     children: ["Amber", "Alex"],
-   *   },
-   * ]);
-   * const childNames = people
-   *   .flatMap((person) => person.children)
-   *   .collect();
-   * // = ["James", "Jacob", "Amber", "Alex"];
-   * ```
-   *
-   * @param mapper A function applied to each value in-turn. The return value of
-   *   this function is used as an iterable, to provide downstream values.
-   */
-  flatMap<V>(mapper: Mapper<T, Iterable<V>>): LazyIterable<V>;
+  map<V>(mapper: Mapper<T, V>): ReversibleLazyIterable<V>;
 
-  /**
-   * Runs the provided action on each item when the item is processed.
-   *
-   * @param action A function that is applied to each value in-turn.
-   * @returns A new instance of the same iterable
-   */
-  do(action: Action<T>): LazyIterable<T>;
+  flatMap<V, MapperIter extends Iterable<V>>(
+    mapper: Mapper<T, MapperIter>,
+  ): MapperIter extends IntoReversibleLazy<V>
+    ? ReversibleLazyIterable<V>
+    : LazyIterable<V>;
 
-  /**
-   * Collects the current array into a standard array.
-   *
-   * **This pulls values through the iterable**. Do _not_ call this method on
-   * infinite iterables, unless you have a limiting operator.
-   */
+  do(action: Action<T>): ReversibleLazyIterable<T>;
+
   collect(): Array<T>;
 
-  /**
-   * Limits the number of values to _at most_ `nValues`. If the array ends
-   * before reaching `nValues`, then this operator has no effect.
-   *
-   * @param nValues The maximum number of values to emit.
-   */
-  limit(nValues: number): LazyIterable<T>;
+  limit(nValues: number): ReversibleLazyIterable<T>;
+
+  takeWhile(predicate: Predicate<T>): ReversibleLazyIterable<T>;
 
   /**
-   * Passes through values until the predicate returns false, then terminates
-   * the iterator.
+   * Reverses the iterable
    *
-   * Note that this must pull the failing value through the chain in order to
-   * evaluate it.
-   *
-   * ## Example
-   *
-   * ```ts
-   * let seenBefore = 0;
-   * let seenAfter = 0;
-   * const lazyArray = lazy([1, 2, "hi", 4, 5])
-   *   .do(() => seenBefore++)
-   *   .takeWhile((v) => Number.isInteger(v))
-   *   .do(() => seenAfter++)
-   *   .collect();
-   *
-   * lazyArray === [1, 2]; // "hi" failed, so the rest is omitted
-   * seenBefore === 3; // We had to evaluate 3 items
-   * seenAfter === 2; // 2 items were emitted after the `takeWhile` operator
-   * ```
-   *
-   * @param predicate A function applied to each value in-turn. If this function
-   *   returns false, the value is not emitted, and the iterator terminates.
+   * This is non-mutating, and lazy.
    */
-  takeWhile(predicate: Predicate<T>): LazyIterable<T>;
+  reverse(): ReversibleLazyIterable<T>;
 
-  /**
-   * Passes through values until the predicate returns true, then terminates the
-   * iterator.
-   *
-   * Note that this must pull the succeeding value through the chain in order to
-   * evaluate it.
-   *
-   * ## Example
-   *
-   * ```ts
-   * let seenBefore = 0;
-   * let seenAfter = 0;
-   * const lazyArray = lazy([1, 2, 3, 4, 5, 6])
-   *   .do(() => seenBefore++)
-   *   .takeUntil((v) => v > 3)
-   *   .do(() => seenAfter++)
-   *   .collect();
-   *
-   * lazyArray === [1, 2, 3]; // 4 is the first value > 3, so the rest is omitted
-   * seenBefore === 3; // We had to evaluate 4 items
-   * seenAfter === 2; // 3 items were emitted after the `takeUntil` operator
-   * ```
-   *
-   * @param predicate A function applied to each value in-turn. If this function
-   *   returns true, the value is not emitted, and the iterator terminates.
-   */
-  takeUntil(predicate: Predicate<T>): LazyIterable<T>;
-
-  /**
-   * Returns whether any value in the iterable returns true for the predicate,
-   * exiting early if possible.
-   *
-   * This consumes values in order to produces its output, up until the
-   * predicate returns true, or the iterable is exhausted.
-   *
-   * @param predicate A function that is executed on values produced by the
-   *   iterable. If this returns true for any value, the operator exits and
-   *   returns true.
-   * @returns True if the predicate was true for any value in the iterable,
-   *   False if the iterable exhausted without the predicate producing a truthy
-   *   result.
-   */
-  any(predicate: Predicate<T>): boolean;
-
-  /**
-   * Returns whether all values in the iterable return true for the predicate,
-   * exiting early if possible.
-   *
-   * This consumes values in order to produces its output, up until the
-   * predicate returns false, or the iterable is exhausted.
-   *
-   * @param predicate A function that is executed on values produced by the
-   *   iterable. If this returns true for all values, the operator returns true.
-   *   If this returns false for any value, the operator exits and returns
-   *   false.
-   * @returns True if the predicate was true for all values in the iterable,
-   *   False if any value caused the predicate to produce a falsy value.
-   */
-  all(predicate: Predicate<T>): boolean;
-  readonly [LAZY_FLAG]: true;
+  readonly [R_LAZY]: true;
 }
 
-/**
- * Creates a reversible lazy array from the source.
- *
- * This is still in early development, and is subject to change.
- */
-export function lazyIterable<T>(source: Iterable<T>): LazyIterable<T> {
-  // Allow pass-thru
-  if (isLazy(source)) {
+export function rLazyIterable<T>(
+  source: IntoReversibleLazy<T>,
+): ReversibleLazyIterable<T> {
+  if (isReversibleLazy(source)) {
     return source;
   }
 
   return {
-    [Symbol.iterator]() {
-      return source[Symbol.iterator]();
+    ...(lazyIterable(source) as ReversibleLazyIterable<T>),
+    [R_ITER]() {
+      return R_ITER in source
+        ? source[R_ITER]()
+        : arrayToReverseIterator(source);
     },
 
-    // This flags that we have a fully-fledged reversible lazy iterator.
-    [LAZY_FLAG]: true,
-
-    filter(fn) {
-      return lazyFilter(this, fn);
+    reverse() {
+      return rLazyIterable({
+        [Symbol.iterator]: this[R_ITER],
+        [R_ITER]: this[Symbol.iterator],
+      });
     },
 
-    do(fn) {
-      return lazyDo(this, fn);
-    },
-
-    map(fn) {
-      return lazyMap(this, fn);
-    },
-
-    flatMap(fn) {
-      return lazyFlatMap(this, fn);
-    },
-
-    limit(nValues) {
-      return lazyLimit(this, nValues);
-    },
-
-    takeWhile(fn) {
-      return lazyTakeWhile(this, fn);
-    },
-
-    takeUntil(fn) {
-      return lazyTakeUntil(this, fn);
-    },
-
-    collect() {
-      return Array.from(this);
-    },
-
-    any(fn) {
-      return lazyAny(this, fn);
-    },
-
-    all(fn) {
-      return lazyAll(this, fn);
-    },
+    [R_LAZY]: true,
   };
+}
+
+function* arrayToReverseIterator<T>(arr: Array<T>): Iterator<T> {
+  // Unfortunately, unless we want to eagerly evaluate this, we have to manually
+  // iterate in reverse.
+  for (let index = arr.length - 1; index >= 0; index--) {
+    yield arr[index]!;
+  }
+}
+
+/**
+ * Applies the provided function to both forward and reverse iterators
+ *
+ * @param lazy The lazy array to operate on
+ * @param func A function that takes 1 or 2 parameters
+ */
+export function reverseHelper<
+  InItem,
+  OutItem,
+  InIterable extends LazyIterable<InItem>,
+  OutIterable = InIterable extends LazyIterable<InItem>
+    ? LazyIterable<OutItem>
+    : ReversibleLazyIterable<OutItem>,
+>(
+  lazy: InIterable,
+  func: (
+    it: Iterator<InItem, any, undefined>,
+    iteratorProp: typeof R_ITER | typeof Symbol.iterator,
+  ) => () => IteratorResult<OutItem>,
+): OutIterable {
+  const forwardNext = func(lazy[Symbol.iterator](), Symbol.iterator);
+  if (isReversibleLazy(lazy)) {
+    const reverseNext = func(lazy[R_ITER](), R_ITER);
+    return rLazyIterable({
+      [Symbol.iterator]() {
+        return { next: forwardNext };
+      },
+      [R_ITER]() {
+        return { next: reverseNext };
+      },
+    }) as OutIterable;
+  } else {
+    return lazyIterable({
+      [Symbol.iterator]() {
+        return { next: forwardNext };
+      },
+    }) as OutIterable;
+  }
 }

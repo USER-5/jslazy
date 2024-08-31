@@ -1,5 +1,5 @@
-import type { LazyIterable } from "./lazyIterable";
-import { reverseHelper } from "./reversibleLazyIterable";
+import type { LazyIterable } from "./index";
+import { reverseHelper } from "./lazyIterable";
 
 export function lazyLimit<Item, Iterable extends LazyIterable<Item>>(
   lazyIterator: Iterable,

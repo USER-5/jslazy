@@ -1,8 +1,5 @@
-import type { LazyIterable } from "./lazyIterable";
-import {
-  reverseHelper,
-  type ReversibleLazyIterable,
-} from "./reversibleLazyIterable";
+import type { LazyIterable, ReversibleLazyIterable } from "./index";
+import { reverseHelper } from "./lazyIterable";
 
 /** A simple helper, useful for implementing basic operators */
 export function simpleHelper<

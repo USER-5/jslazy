@@ -1,5 +1,4 @@
-import type { Predicate } from "./filter";
-import type { LazyIterable } from "./lazyIterable";
+import type { LazyIterable, Predicate } from "./index";
 import { lazyTakeWhile } from "./takeWhile";
 
 export function lazyTakeUntil<Item, Iter extends LazyIterable<Item>>(

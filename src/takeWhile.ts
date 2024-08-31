@@ -1,6 +1,5 @@
 import { simpleHelper } from "./helpers";
-import type { Predicate } from "./filter";
-import type { LazyIterable } from "./lazyIterable";
+import type { LazyIterable, Predicate } from "./index";
 
 export function lazyTakeWhile<Item, Iter extends LazyIterable<Item>>(
   lazyIterable: Iter,

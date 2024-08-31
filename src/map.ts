@@ -1,6 +1,5 @@
 import { simpleHelper } from "./helpers";
-import type { LazyIterable } from "./lazyIterable";
-import type { ReversibleLazyIterable } from "./reversibleLazyIterable";
+import type { LazyIterable, ReversibleLazyIterable } from "./index";
 
 export type Mapper<T, R> = (value: T) => R;
 
