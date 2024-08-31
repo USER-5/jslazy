@@ -1,11 +1,11 @@
-import { lazyIterable } from "./lazyIterable";
-import { isIntoReversibleLazy, rLazyIterable, } from "./reversibleLazyIterable";
+import { forwardLazyIterable } from "./forwardLazyIterable";
+import { isIntoLazy, rLazyIterable } from "./lazyIterable";
 export function lazy(source) {
-    if (isIntoReversibleLazy(source)) {
+    if (isIntoLazy(source)) {
         return rLazyIterable(source);
     }
     else {
-        return lazyIterable(source);
+        return forwardLazyIterable(source);
     }
 }
 //# sourceMappingURL=lazy.js.map

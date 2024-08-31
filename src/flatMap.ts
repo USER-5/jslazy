@@ -1,26 +1,26 @@
-import { lazy, type LazyIterable } from "./index";
+import { type ForwardLazyIterable } from "./index";
 import type { Mapper } from "./map";
 import {
-  isReversibleLazy,
+  isLazy,
   reverseHelper,
   rLazyIterable,
-  type IntoReversibleLazy,
-  type ReversibleLazyIterable,
+  type IntoLazy,
+  type LazyIterable,
 } from "./lazyIterable";
-import { lazyIterable } from "./forwardLazyIterable";
+import { forwardLazyIterable } from "./forwardLazyIterable";
 
 export function lazyFlatMap<
   InItem,
   OutItem,
-  InIterable extends LazyIterable<InItem>,
+  InIterable extends ForwardLazyIterable<InItem>,
   MapperIterable extends Iterable<OutItem>,
   // Oh lord the type narrowing...
   // In short: both InIterable and MapperIterable need to be reversible for the output to be reversible
-  OutIterable = InIterable extends ReversibleLazyIterable<InItem>
-    ? MapperIterable extends IntoReversibleLazy<OutItem>
-      ? ReversibleLazyIterable<OutItem>
-      : LazyIterable<OutItem>
-    : LazyIterable<OutItem>,
+  OutIterable = InIterable extends LazyIterable<InItem>
+    ? MapperIterable extends IntoLazy<OutItem>
+      ? LazyIterable<OutItem>
+      : ForwardLazyIterable<OutItem>
+    : ForwardLazyIterable<OutItem>,
 >(lazyArray: InIterable, fn: Mapper<InItem, MapperIterable>): OutIterable {
   return reverseHelper<InItem, OutItem, InIterable, OutIterable>(
     lazyArray,
@@ -36,13 +36,13 @@ export function lazyFlatMap<
             if (subIteratorResult.done === false) {
               const child = fn(subIteratorResult.value);
               // If we only have a forward lazy iterable, we can ONLY use Symbol.iterator.
-              if (isReversibleLazy(child)) {
+              if (isLazy(child)) {
                 childIterator = rLazyIterable(child)[prop]();
               } else {
                 if (prop !== Symbol.iterator) {
                   throw "jslazy/FlatMap: Cannot Reverse Child Iterable.\nFlatMap received a non-reversible child iterable and then tried to reverse it";
                 }
-                childIterator = lazyIterable(child)[Symbol.iterator]();
+                childIterator = forwardLazyIterable(child)[Symbol.iterator]();
               }
             } else {
               // We have run out of parent values. Time to terminate

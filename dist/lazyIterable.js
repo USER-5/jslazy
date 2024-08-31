@@ -1,69 +1,68 @@
-import { lazyDo } from "./do";
-import { lazyFilter } from "./filter";
-import { lazyFlatMap } from "./flatMap";
-import { lazyLimit } from "./limit";
-import { lazyMap } from "./map";
-import { lazyTakeWhile } from "./takeWhile";
-import { lazyAny } from "./any";
-import { lazyTakeUntil } from "./takeUntil";
-import { lazyAll } from "./all";
-// This should NOT be exported
+import { isForwardLazy } from "./index";
+import { forwardLazyIterable } from "./forwardLazyIterable";
+// These should NOT be exported
+const R_ITER = Symbol();
 const LAZY_FLAG = Symbol();
-/**
- * Determines whether the provided iterable is a LazyIterable.
- *
- * Note: A `ReversibleLazyIterable` will pass this check, as it's an extension
- * of `LazyIterable`
- */
-export function isLazy(val) {
-    return LAZY_FLAG in val && val[LAZY_FLAG] === true;
+/** Determines whether an iterable is compatible with `IntoLazy` */
+export function isIntoLazy(val) {
+    return isLazy(val) || Array.isArray(val);
 }
-/**
- * Creates a reversible lazy array from the source.
- *
- * This is still in early development, and is subject to change.
- */
-export function lazyIterable(source) {
-    // Allow pass-thru
+/** Determines whether an iterable is a `LazyIterable`. */
+export function isLazy(val) {
+    return isForwardLazy(val) && LAZY_FLAG in val && val[LAZY_FLAG] === true;
+}
+export function rLazyIterable(source) {
     if (isLazy(source)) {
         return source;
     }
     return {
-        [Symbol.iterator]() {
-            return source[Symbol.iterator]();
+        ...forwardLazyIterable(source),
+        [R_ITER]() {
+            return R_ITER in source
+                ? source[R_ITER]()
+                : arrayToReverseIterator(source);
         },
-        // This flags that we have a fully-fledged reversible lazy iterator.
+        reverse() {
+            return rLazyIterable({
+                [Symbol.iterator]: this[R_ITER],
+                [R_ITER]: this[Symbol.iterator],
+            });
+        },
         [LAZY_FLAG]: true,
-        filter(fn) {
-            return lazyFilter(this, fn);
-        },
-        do(fn) {
-            return lazyDo(this, fn);
-        },
-        map(fn) {
-            return lazyMap(this, fn);
-        },
-        flatMap(fn) {
-            return lazyFlatMap(this, fn);
-        },
-        limit(nValues) {
-            return lazyLimit(this, nValues);
-        },
-        takeWhile(fn) {
-            return lazyTakeWhile(this, fn);
-        },
-        takeUntil(fn) {
-            return lazyTakeUntil(this, fn);
-        },
-        collect() {
-            return Array.from(this);
-        },
-        any(fn) {
-            return lazyAny(this, fn);
-        },
-        all(fn) {
-            return lazyAll(this, fn);
-        },
     };
+}
+function* arrayToReverseIterator(arr) {
+    // Unfortunately, unless we want to eagerly evaluate this, we have to manually
+    // iterate in reverse.
+    for (let index = arr.length - 1; index >= 0; index--) {
+        yield arr[index];
+    }
+}
+/**
+ * Applies the provided function to both forward and reverse iterators
+ *
+ * @param lazy The lazy array to operate on
+ * @param func A function that takes 1 or 2 parameters
+ */
+export function reverseHelper(lazy, func) {
+    const forwardNext = func(lazy[Symbol.iterator](), Symbol.iterator);
+    if (isLazy(lazy)) {
+        const reverseNext = func(lazy[R_ITER](), R_ITER);
+        return rLazyIterable({
+            [Symbol.iterator]() {
+                return { next: forwardNext };
+            },
+            [R_ITER]() {
+                return { next: reverseNext };
+            },
+        });
+    }
+    else {
+        return forwardLazyIterable({
+            [Symbol.iterator]() {
+                return { next: forwardNext };
+            },
+        });
+    }
 }
 //# sourceMappingURL=lazyIterable.js.map

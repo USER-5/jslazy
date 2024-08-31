@@ -1,16 +1,15 @@
 import type { Action } from "./do";
 import type { Predicate } from "./filter";
-import { isLazy, type LazyIterable } from "./index";
-import { lazyIterable } from "./forwardLazyIterable";
+import { isForwardLazy, type ForwardLazyIterable } from "./index";
+import { forwardLazyIterable } from "./forwardLazyIterable";
 import type { Mapper } from "./map";
 
 // These should NOT be exported
 const R_ITER: unique symbol = Symbol();
-const R_LAZY: unique symbol = Symbol();
+const LAZY_FLAG: unique symbol = Symbol();
 
 /**
- * Represents the union of types that we can convert into a
- * `ReversibleLazyIterable`
+ * Represents the union of types that we can convert into a `LazyIterable`
  *
  * Either:
  *
@@ -18,77 +17,67 @@ const R_LAZY: unique symbol = Symbol();
  * 2. Something which implements both the `Iterable` interface, and the
  *    `ReversibleIterable` interface. - that is, it contains two iterators.
  */
-export type IntoReversibleLazy<T> =
-  | (ReversibleIterable<T> & Iterable<T>)
-  | Array<T>;
+export type IntoLazy<T> = (ReversibleIterable<T> & Iterable<T>) | Array<T>;
 
 export interface ReversibleIterable<T> {
   [R_ITER](): Iterator<T>;
 }
 
-/** Determines whether an iterable is compatible with `IntoReversibleLazy` */
-export function isIntoReversibleLazy<T>(
-  val: Iterable<T>,
-): val is IntoReversibleLazy<T> {
-  return isReversibleLazy(val) || Array.isArray(val);
+/** Determines whether an iterable is compatible with `IntoLazy` */
+export function isIntoLazy<T>(val: Iterable<T>): val is IntoLazy<T> {
+  return isLazy(val) || Array.isArray(val);
 }
 
-/** Determines whether an iterable is a `ReversibleLazyIterable`. */
-export function isReversibleLazy<T>(
-  val: Iterable<T>,
-): val is ReversibleLazyIterable<T> {
-  return isLazy(val) && R_LAZY in val && val[R_LAZY] === true;
+/** Determines whether an iterable is a `LazyIterable`. */
+export function isLazy<T>(val: Iterable<T>): val is LazyIterable<T> {
+  return isForwardLazy(val) && LAZY_FLAG in val && val[LAZY_FLAG] === true;
 }
 
 /**
  * A lazily evaluated iterable, which is lazily reversable.
  *
- * This is the core type for the _jslazy_ library, along with `LazyIterable`.
- * The library will return a `ReversibleLazyIterable` if possible.
+ * This is the core type for the _jslazy_ library, along with
+ * `ForwardLazyIterable`. The library will return a `LazyIterable` if possible.
  *
- * `ReversibleLazyIterables`, as their name suggests, are lazily evaluated, and
- * must be _consumed_ in order to perform work.
+ * `LazyIterables`, as their name suggests, are lazily evaluated, and must be
+ * _consumed_ in order to perform work.
  */
-export interface ReversibleLazyIterable<T>
+export interface LazyIterable<T>
   extends ReversibleIterable<T>,
-    LazyIterable<T> {
-  filter(predicate: Predicate<T>): ReversibleLazyIterable<T>;
+    ForwardLazyIterable<T> {
+  filter(predicate: Predicate<T>): LazyIterable<T>;
 
-  map<V>(mapper: Mapper<T, V>): ReversibleLazyIterable<V>;
+  map<V>(mapper: Mapper<T, V>): LazyIterable<V>;
 
   flatMap<V, MapperIter extends Iterable<V>>(
     mapper: Mapper<T, MapperIter>,
-  ): MapperIter extends IntoReversibleLazy<V>
-    ? ReversibleLazyIterable<V>
-    : LazyIterable<V>;
+  ): MapperIter extends IntoLazy<V> ? LazyIterable<V> : ForwardLazyIterable<V>;
 
-  do(action: Action<T>): ReversibleLazyIterable<T>;
+  do(action: Action<T>): LazyIterable<T>;
 
   collect(): Array<T>;
 
-  limit(nValues: number): ReversibleLazyIterable<T>;
+  limit(nValues: number): LazyIterable<T>;
 
-  takeWhile(predicate: Predicate<T>): ReversibleLazyIterable<T>;
+  takeWhile(predicate: Predicate<T>): LazyIterable<T>;
 
   /**
    * Reverses the iterable
    *
    * This is non-mutating, and lazy.
    */
-  reverse(): ReversibleLazyIterable<T>;
+  reverse(): LazyIterable<T>;
 
-  readonly [R_LAZY]: true;
+  readonly [LAZY_FLAG]: true;
 }
 
-export function rLazyIterable<T>(
-  source: IntoReversibleLazy<T>,
-): ReversibleLazyIterable<T> {
-  if (isReversibleLazy(source)) {
+export function rLazyIterable<T>(source: IntoLazy<T>): LazyIterable<T> {
+  if (isLazy(source)) {
     return source;
   }
 
   return {
-    ...(lazyIterable(source) as ReversibleLazyIterable<T>),
+    ...(forwardLazyIterable(source) as LazyIterable<T>),
     [R_ITER]() {
       return R_ITER in source
         ? source[R_ITER]()
@@ -102,7 +91,7 @@ export function rLazyIterable<T>(
       });
     },
 
-    [R_LAZY]: true,
+    [LAZY_FLAG]: true,
   };
 }
 
@@ -123,10 +112,10 @@ function* arrayToReverseIterator<T>(arr: Array<T>): Iterator<T> {
 export function reverseHelper<
   InItem,
   OutItem,
-  InIterable extends LazyIterable<InItem>,
-  OutIterable = InIterable extends LazyIterable<InItem>
-    ? LazyIterable<OutItem>
-    : ReversibleLazyIterable<OutItem>,
+  InIterable extends ForwardLazyIterable<InItem>,
+  OutIterable = InIterable extends ForwardLazyIterable<InItem>
+    ? ForwardLazyIterable<OutItem>
+    : LazyIterable<OutItem>,
 >(
   lazy: InIterable,
   func: (
@@ -135,7 +124,7 @@ export function reverseHelper<
   ) => () => IteratorResult<OutItem>,
 ): OutIterable {
   const forwardNext = func(lazy[Symbol.iterator](), Symbol.iterator);
-  if (isReversibleLazy(lazy)) {
+  if (isLazy(lazy)) {
     const reverseNext = func(lazy[R_ITER](), R_ITER);
     return rLazyIterable({
       [Symbol.iterator]() {
@@ -146,7 +135,7 @@ export function reverseHelper<
       },
     }) as OutIterable;
   } else {
-    return lazyIterable({
+    return forwardLazyIterable({
       [Symbol.iterator]() {
         return { next: forwardNext };
       },

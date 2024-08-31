@@ -1,6 +1,6 @@
 export { lazy } from "./lazy";
+export { isForwardLazy } from "./forwardLazyIterable";
 export { isLazy } from "./lazyIterable";
-export { isReversibleLazy, } from "./reversibleLazyIterable";
 export {} from "./map";
 export {} from "./filter";
 export {} from "./do";

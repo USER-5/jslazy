@@ -1,7 +1,7 @@
-import type { LazyIterable, Predicate } from "./index";
+import type { ForwardLazyIterable, Predicate } from "./index";
 import { lazyTakeWhile } from "./takeWhile";
 
-export function lazyTakeUntil<Item, Iter extends LazyIterable<Item>>(
+export function lazyTakeUntil<Item, Iter extends ForwardLazyIterable<Item>>(
   lazyIterable: Iter,
   predicate: Predicate<Item>,
 ): Iter {

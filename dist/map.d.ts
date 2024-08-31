@@ -1,4 +1,3 @@
-import type { LazyIterable } from "./lazyIterable";
-import type { ReversibleLazyIterable } from "./reversibleLazyIterable";
+import type { ForwardLazyIterable, LazyIterable } from "./index";
 export type Mapper<T, R> = (value: T) => R;
-export declare function lazyMap<InItem, OutItem, InIterable extends LazyIterable<InItem>, OutIterable = InIterable extends ReversibleLazyIterable<InItem> ? ReversibleLazyIterable<OutItem> : LazyIterable<OutItem>>(lazyArray: InIterable, mapper: Mapper<InItem, OutItem>): OutIterable;
+export declare function lazyMap<InItem, OutItem, InIterable extends ForwardLazyIterable<InItem>, OutIterable = InIterable extends LazyIterable<InItem> ? LazyIterable<OutItem> : ForwardLazyIterable<OutItem>>(lazyArray: InIterable, mapper: Mapper<InItem, OutItem>): OutIterable;

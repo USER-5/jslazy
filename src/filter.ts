@@ -1,9 +1,9 @@
 import { simpleHelper } from "./helpers";
-import type { LazyIterable } from "./index";
+import type { ForwardLazyIterable } from "./index";
 
 export type Predicate<T> = (value: T) => boolean;
 
-export function lazyFilter<Item, Iterable extends LazyIterable<Item>>(
+export function lazyFilter<Item, Iterable extends ForwardLazyIterable<Item>>(
   lazyIterable: Iterable,
   filterFunction: Predicate<Item>,
 ): Iterable {

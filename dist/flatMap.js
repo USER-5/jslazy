@@ -1,5 +1,6 @@
-import { lazyIterable } from "./lazyIterable";
-import { isReversibleLazy, reverseHelper, rLazyIterable, } from "./reversibleLazyIterable";
+import {} from "./index";
+import { isLazy, reverseHelper, rLazyIterable, } from "./lazyIterable";
+import { forwardLazyIterable } from "./forwardLazyIterable";
 export function lazyFlatMap(lazyArray, fn) {
     return reverseHelper(lazyArray, (iterator, prop) => {
         // We switch this out each time we exhaust an inner iterable
@@ -11,11 +12,15 @@ export function lazyFlatMap(lazyArray, fn) {
                     const subIteratorResult = iterator.next();
                     if (subIteratorResult.done === false) {
                         const child = fn(subIteratorResult.value);
-                        if (isReversibleLazy(child)) {
+                        // If we only have a forward lazy iterable, we can ONLY use Symbol.iterator.
+                        if (isLazy(child)) {
                             childIterator = rLazyIterable(child)[prop]();
                         }
                         else {
-                            childIterator = lazyIterable(child)[Symbol.iterator]();
+                            if (prop !== Symbol.iterator) {
+                                throw "jslazy/FlatMap: Cannot Reverse Child Iterable.\nFlatMap received a non-reversible child iterable and then tried to reverse it";
+                            }
+                            childIterator = forwardLazyIterable(child)[Symbol.iterator]();
                         }
                     }
                     else {

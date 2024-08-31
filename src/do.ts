@@ -1,9 +1,9 @@
 import { simpleHelper } from "./helpers";
-import type { LazyIterable } from "./index";
+import type { ForwardLazyIterable } from "./index";
 
 export type Action<Item> = (value: Item) => void;
 
-export function lazyDo<InItem, Iterable extends LazyIterable<InItem>>(
+export function lazyDo<InItem, Iterable extends ForwardLazyIterable<InItem>>(
   lazyArray: Iterable,
   action: Action<InItem>,
 ): Iterable {

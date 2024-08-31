@@ -1,16 +1,12 @@
-import { lazyIterable } from "./forwardLazyIterable";
-import type {
-  LazyIterable,
-  IntoReversibleLazy,
-  ReversibleLazyIterable,
-} from "./index";
-import { isIntoReversibleLazy, rLazyIterable } from "./lazyIterable";
+import { forwardLazyIterable } from "./forwardLazyIterable";
+import type { ForwardLazyIterable, IntoLazy, LazyIterable } from "./index";
+import { isIntoLazy, rLazyIterable } from "./lazyIterable";
 
 /**
  * Construct a lazy iterable from an existing iterable
  *
- * If possible, this will return a `ReversibleLazyIterable`, which allows for
- * lazy reversing.
+ * If possible, this will return a `LazyIterable`, which allows for lazy
+ * reversing.
  *
  * ## Examples
  *
@@ -26,14 +22,16 @@ import { isIntoReversibleLazy, rLazyIterable } from "./lazyIterable";
  * @param source The array, set, or other iterable to convert.
  * @returns A LazyIterable from the provided source
  */
+export function lazy<Items>(source: IntoLazy<Items>): LazyIterable<Items>;
 export function lazy<Items>(
-  source: IntoReversibleLazy<Items>,
-): ReversibleLazyIterable<Items>;
-export function lazy<Items>(source: Iterable<Items>): LazyIterable<Items>;
-export function lazy<Items>(source: Iterable<Items>): LazyIterable<Items> {
-  if (isIntoReversibleLazy(source)) {
+  source: Iterable<Items>,
+): ForwardLazyIterable<Items>;
+export function lazy<Items>(
+  source: Iterable<Items>,
+): ForwardLazyIterable<Items> {
+  if (isIntoLazy(source)) {
     return rLazyIterable(source);
   } else {
-    return lazyIterable(source);
+    return forwardLazyIterable(source);
   }
 }

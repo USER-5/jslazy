@@ -1,14 +1,14 @@
-import type { LazyIterable, ReversibleLazyIterable } from "./index";
+import type { ForwardLazyIterable, LazyIterable } from "./index";
 import { reverseHelper } from "./lazyIterable";
 
 /** A simple helper, useful for implementing basic operators */
 export function simpleHelper<
   InItem,
   OutItem,
-  InIterable extends LazyIterable<InItem>,
-  OutIterable = InIterable extends ReversibleLazyIterable<InItem>
-    ? ReversibleLazyIterable<OutItem>
-    : LazyIterable<OutItem>,
+  InIterable extends ForwardLazyIterable<InItem>,
+  OutIterable = InIterable extends LazyIterable<InItem>
+    ? LazyIterable<OutItem>
+    : ForwardLazyIterable<OutItem>,
 >(
   lazyArray: InIterable,
   callback: (val: InItem) => AccessorResult<OutItem>,

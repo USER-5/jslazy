@@ -1,2 +1,2 @@
-import type { LazyIterable } from "./lazyIterable";
-export declare function lazyLimit<Item, Iterable extends LazyIterable<Item>>(lazyIterator: Iterable, nValues: number): Iterable;
+import type { ForwardLazyIterable } from "./index";
+export declare function lazyLimit<Item, Iterable extends ForwardLazyIterable<Item>>(lazyIterator: Iterable, nValues: number): Iterable;

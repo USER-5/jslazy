@@ -10,42 +10,45 @@ import { lazyTakeUntil } from "./takeUntil";
 import { lazyAll } from "./all";
 
 // This should NOT be exported
-const LAZY_FLAG: unique symbol = Symbol();
+const FORWARD_LAZY_FLAG: unique symbol = Symbol();
 
 /**
- * Determines whether the provided iterable is a LazyIterable.
+ * Determines whether the provided iterable is a ForwardLazyIterable.
  *
  * Note: A `ReversibleLazyIterable` will pass this check, as it's an extension
- * of `LazyIterable`
+ * of `ForwardLazyIterable`
  */
-export function isLazy<T>(val: Iterable<T>): val is LazyIterable<T> {
-  return LAZY_FLAG in val && val[LAZY_FLAG] === true;
+export function isForwardLazy<T>(
+  val: Iterable<T>,
+): val is ForwardLazyIterable<T> {
+  return FORWARD_LAZY_FLAG in val && val[FORWARD_LAZY_FLAG] === true;
 }
 
 /**
  * A lazily evaluated iterable.
  *
  * This is the core type for the _jslazy_ library, along with
- * `ReversibleLazyIterable`.
+ * `ReversibleLazyIterable`. `ForwardLazyIterable` objects cannot be reversed
+ * lazily.
  *
- * `LazyIterables`, as their name suggests, are lazily evaluated, and must be
- * _consumed_ in order to perform work.
+ * `ForwardLazyIterables`, as their name suggests, are lazily evaluated, and
+ * must be _consumed_ in order to perform work.
  */
-export interface LazyIterable<T> extends Iterable<T> {
+export interface ForwardLazyIterable<T> extends Iterable<T> {
   /**
    * Filters out items which return 'false' when entered into the predicate.
    *
    * @param predicate A function applied to each value in-turn. If this function
    *   returns false, the value is omitted from the downstream iterable
    */
-  filter(predicate: Predicate<T>): LazyIterable<T>;
+  filter(predicate: Predicate<T>): ForwardLazyIterable<T>;
   /**
    * Maps each value into a different value.
    *
    * @param mapper A function applied to each value in-turn. The return value of
    *   this function becomes the downstream iterable's value.
    */
-  map<V>(mapper: Mapper<T, V>): LazyIterable<V>;
+  map<V>(mapper: Mapper<T, V>): ForwardLazyIterable<V>;
 
   /**
    * Flattens each item of the contained lazy arrays.
@@ -72,7 +75,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    * @param mapper A function applied to each value in-turn. The return value of
    *   this function is used as an iterable, to provide downstream values.
    */
-  flatMap<V>(mapper: Mapper<T, Iterable<V>>): LazyIterable<V>;
+  flatMap<V>(mapper: Mapper<T, Iterable<V>>): ForwardLazyIterable<V>;
 
   /**
    * Runs the provided action on each item when the item is processed.
@@ -80,7 +83,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    * @param action A function that is applied to each value in-turn.
    * @returns A new instance of the same iterable
    */
-  do(action: Action<T>): LazyIterable<T>;
+  do(action: Action<T>): ForwardLazyIterable<T>;
 
   /**
    * Collects the current array into a standard array.
@@ -96,7 +99,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    *
    * @param nValues The maximum number of values to emit.
    */
-  limit(nValues: number): LazyIterable<T>;
+  limit(nValues: number): ForwardLazyIterable<T>;
 
   /**
    * Passes through values until the predicate returns false, then terminates
@@ -124,7 +127,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    * @param predicate A function applied to each value in-turn. If this function
    *   returns false, the value is not emitted, and the iterator terminates.
    */
-  takeWhile(predicate: Predicate<T>): LazyIterable<T>;
+  takeWhile(predicate: Predicate<T>): ForwardLazyIterable<T>;
 
   /**
    * Passes through values until the predicate returns true, then terminates the
@@ -152,7 +155,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    * @param predicate A function applied to each value in-turn. If this function
    *   returns true, the value is not emitted, and the iterator terminates.
    */
-  takeUntil(predicate: Predicate<T>): LazyIterable<T>;
+  takeUntil(predicate: Predicate<T>): ForwardLazyIterable<T>;
 
   /**
    * Returns whether any value in the iterable returns true for the predicate,
@@ -185,7 +188,7 @@ export interface LazyIterable<T> extends Iterable<T> {
    *   False if any value caused the predicate to produce a falsy value.
    */
   all(predicate: Predicate<T>): boolean;
-  readonly [LAZY_FLAG]: true;
+  readonly [FORWARD_LAZY_FLAG]: true;
 }
 
 /**
@@ -193,9 +196,11 @@ export interface LazyIterable<T> extends Iterable<T> {
  *
  * This is still in early development, and is subject to change.
  */
-export function lazyIterable<T>(source: Iterable<T>): LazyIterable<T> {
+export function forwardLazyIterable<T>(
+  source: Iterable<T>,
+): ForwardLazyIterable<T> {
   // Allow pass-thru
-  if (isLazy(source)) {
+  if (isForwardLazy(source)) {
     return source;
   }
 
@@ -205,7 +210,7 @@ export function lazyIterable<T>(source: Iterable<T>): LazyIterable<T> {
     },
 
     // This flags that we have a fully-fledged reversible lazy iterator.
-    [LAZY_FLAG]: true,
+    [FORWARD_LAZY_FLAG]: true,
 
     filter(fn) {
       return lazyFilter(this, fn);
