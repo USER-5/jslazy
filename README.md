@@ -223,6 +223,27 @@ const anyEven = lazy([1, 2, 3])
 // seen === 2
 ```
 
+### All
+
+Returns true if all values in the iterable return true for the predicate,
+exiting early if possible.
+
+This consumes values.
+
+```ts
+let seen = 0;
+const allOdd = lazy([1, 2, 3])
+  .do((v) => seen++)
+  // isOdd check
+  .all((v) => v % 2 === 1);
+
+// allOdd === false
+
+// We shouldn't need to evaluate 3, since 2 is even
+//   Therefore all elements are not odd.
+// seen === 2
+```
+
 ## LazyIterable and ReversibleLazyIterable
 
 There are two core types to this library: `LazyIterable`, and

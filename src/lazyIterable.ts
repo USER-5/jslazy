@@ -7,6 +7,7 @@ import type { Predicate } from "./filter";
 import { lazyTakeWhile } from "./takeWhile";
 import { lazyAny } from "./any";
 import { lazyTakeUntil } from "./takeUntil";
+import { lazyAll } from "./all";
 
 // This should NOT be exported
 const LAZY_FLAG: unique symbol = Symbol();
@@ -165,9 +166,25 @@ export interface LazyIterable<T> extends Iterable<T> {
    *   returns true.
    * @returns True if the predicate was true for any value in the iterable,
    *   False if the iterable exhausted without the predicate producing a truthy
-   *   result
+   *   result.
    */
   any(predicate: Predicate<T>): boolean;
+
+  /**
+   * Returns whether all values in the iterable return true for the predicate,
+   * exiting early if possible.
+   *
+   * This consumes values in order to produces its output, up until the
+   * predicate returns false, or the iterable is exhausted.
+   *
+   * @param predicate A function that is executed on values produced by the
+   *   iterable. If this returns true for all values, the operator returns true.
+   *   If this returns false for any value, the operator exits and returns
+   *   false.
+   * @returns True if the predicate was true for all values in the iterable,
+   *   False if any value caused the predicate to produce a falsy value.
+   */
+  all(predicate: Predicate<T>): boolean;
   readonly [LAZY_FLAG]: true;
 }
 
@@ -224,6 +241,10 @@ export function lazyIterable<T>(source: Iterable<T>): LazyIterable<T> {
 
     any(fn) {
       return lazyAny(this, fn);
+    },
+
+    all(fn) {
+      return lazyAll(this, fn);
     },
   };
 }

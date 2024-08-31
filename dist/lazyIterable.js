@@ -6,6 +6,7 @@ import { lazyMap } from "./map";
 import { lazyTakeWhile } from "./takeWhile";
 import { lazyAny } from "./any";
 import { lazyTakeUntil } from "./takeUntil";
+import { lazyAll } from "./all";
 // This should NOT be exported
 const LAZY_FLAG = Symbol();
 /**
@@ -59,6 +60,9 @@ export function lazyIterable(source) {
         },
         any(fn) {
             return lazyAny(this, fn);
+        },
+        all(fn) {
+            return lazyAll(this, fn);
         },
     };
 }
