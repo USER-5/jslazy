@@ -7,6 +7,8 @@ import { lazyTakeWhile } from "./takeWhile";
 import { lazyAny } from "./any";
 import { lazyTakeUntil } from "./takeUntil";
 import { lazyAll } from "./all";
+import { collectDeep } from "./collectDeep";
+import { lazyWindow } from "./window";
 // This should NOT be exported
 const FORWARD_LAZY_FLAG = Symbol();
 /**
@@ -58,11 +60,17 @@ export function forwardLazyIterable(source) {
         collect() {
             return Array.from(this);
         },
+        collectDeep() {
+            return collectDeep(this);
+        },
         any(fn) {
             return lazyAny(this, fn);
         },
         all(fn) {
             return lazyAll(this, fn);
+        },
+        windows(windowSize) {
+            return lazyWindow(this, windowSize);
         },
     };
 }

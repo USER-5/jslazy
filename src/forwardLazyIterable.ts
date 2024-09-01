@@ -8,6 +8,9 @@ import { lazyTakeWhile } from "./takeWhile";
 import { lazyAny } from "./any";
 import { lazyTakeUntil } from "./takeUntil";
 import { lazyAll } from "./all";
+import { collectDeep, type CollectDeep } from "./collectDeep";
+import type { LazyIterable } from "./lazyIterable";
+import { lazyWindow } from "./window";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();
@@ -92,6 +95,14 @@ export interface ForwardLazyIterable<T> extends Iterable<T> {
    * infinite iterables, unless you have a limiting operator.
    */
   collect(): Array<T>;
+
+  /**
+   * Collects the current array into a standard array, recursing as necessary.
+   *
+   * **This pulls values through the iterable**. Do _not_ call this method on
+   * infinite iterables, unless you have a limiting operator.
+   */
+  collectDeep(): CollectDeep<T>;
 
   /**
    * Limits the number of values to _at most_ `nValues`. If the array ends
@@ -188,6 +199,21 @@ export interface ForwardLazyIterable<T> extends Iterable<T> {
    *   False if any value caused the predicate to produce a falsy value.
    */
   all(predicate: Predicate<T>): boolean;
+
+  /**
+   * Returns an iterable of overlapping sections of the parent.
+   *
+   * Regardless of whether the parent was a `ForwardLazyIterable`, the children
+   * iterable will always be reversible.
+   *
+   * ## Example
+   *
+   * ```ts
+   * const myLazy = lazy([1, 2, 3]).windows(2).collect();
+   * // myLazy = lazy([1,2]), lazy([2,3])
+   * ```
+   */
+  windows(windowSize: number): ForwardLazyIterable<LazyIterable<T>>;
   readonly [FORWARD_LAZY_FLAG]: true;
 }
 
@@ -244,12 +270,20 @@ export function forwardLazyIterable<T>(
       return Array.from(this);
     },
 
+    collectDeep() {
+      return collectDeep(this);
+    },
+
     any(fn) {
       return lazyAny(this, fn);
     },
 
     all(fn) {
       return lazyAll(this, fn);
+    },
+
+    windows(windowSize: number) {
+      return lazyWindow(this, windowSize);
     },
   };
 }

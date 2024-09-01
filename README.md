@@ -62,6 +62,35 @@ const lazyArray = lazy([1, 2, 3])
 //  Received: 3
 ```
 
+### Collect
+
+Gathers the values into an array. This consumes values, and evaluates the chain.
+
+```ts
+const myLazy = lazy([1, 2, 3]);
+const lazyReversed = myLazy.reverse();
+const reversed = lazyReversed.collect();
+// reversed = [3, 2, 1];
+```
+
+### CollectDeep
+
+Much like collect, but recursively collects other lazy iterables.
+
+```ts
+const deepLazy = lazy([
+  lazy([1, 2]),
+  lazy([lazy([3, 4]), lazy([5, 6])]),
+]).collectDeep();
+// deepLazy === [
+//   [1, 2],
+//   [
+//     [3, 4],
+//     [5, 6],
+//   ],
+// ];
+```
+
 ### Filter
 
 Given a predicate, removes items that return false.
@@ -242,6 +271,22 @@ const allOdd = lazy([1, 2, 3])
 // We shouldn't need to evaluate 3, since 2 is even
 //   Therefore all elements are not odd.
 // seen === 2
+```
+
+### Window
+
+Returns an iterable of overlapping windows of a chosen size. The inner windows
+are always of type `LazyIterable`, since we need to know all elements ahead of
+time in order to calculate whether a window is valid.
+
+```ts
+const lazyWindows = lazy([1, 2, 3, 4, 5]).windows(2).collectDeep();
+// lazyWindows === [
+//    [1, 2],
+//    [2, 3],
+//    [3, 4],
+//    [4, 5],
+//  ];
 ```
 
 ## LazyIterable and ForwardLazyIterable

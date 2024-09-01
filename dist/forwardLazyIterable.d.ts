@@ -1,6 +1,8 @@
 import { type Action } from "./do";
 import { type Mapper } from "./map";
 import type { Predicate } from "./filter";
+import { type CollectDeep } from "./collectDeep";
+import type { LazyIterable } from "./lazyIterable";
 declare const FORWARD_LAZY_FLAG: unique symbol;
 /**
  * Determines whether the provided iterable is a ForwardLazyIterable.
@@ -74,6 +76,13 @@ export interface ForwardLazyIterable<T> extends Iterable<T> {
      * infinite iterables, unless you have a limiting operator.
      */
     collect(): Array<T>;
+    /**
+     * Collects the current array into a standard array, recursing as necessary.
+     *
+     * **This pulls values through the iterable**. Do _not_ call this method on
+     * infinite iterables, unless you have a limiting operator.
+     */
+    collectDeep(): CollectDeep<T>;
     /**
      * Limits the number of values to _at most_ `nValues`. If the array ends
      * before reaching `nValues`, then this operator has no effect.
@@ -165,6 +174,20 @@ export interface ForwardLazyIterable<T> extends Iterable<T> {
      *   False if any value caused the predicate to produce a falsy value.
      */
     all(predicate: Predicate<T>): boolean;
+    /**
+     * Returns an iterable of overlapping sections of the parent.
+     *
+     * Regardless of whether the parent was a `ForwardLazyIterable`, the children
+     * iterable will always be reversible.
+     *
+     * ## Example
+     *
+     * ```ts
+     * const myLazy = lazy([1, 2, 3]).windows(2).collect();
+     * // myLazy = lazy([1,2]), lazy([2,3])
+     * ```
+     */
+    windows(windowSize: number): ForwardLazyIterable<LazyIterable<T>>;
     readonly [FORWARD_LAZY_FLAG]: true;
 }
 /**

@@ -38,6 +38,7 @@ export interface LazyIterable<T> extends ReversibleIterable<T>, ForwardLazyItera
     collect(): Array<T>;
     limit(nValues: number): LazyIterable<T>;
     takeWhile(predicate: Predicate<T>): LazyIterable<T>;
+    windows(windowSize: number): LazyIterable<LazyIterable<T>>;
     /**
      * Reverses the iterable
      *

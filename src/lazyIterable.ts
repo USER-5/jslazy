@@ -45,6 +45,7 @@ export function isLazy<T>(val: Iterable<T>): val is LazyIterable<T> {
 export interface LazyIterable<T>
   extends ReversibleIterable<T>,
     ForwardLazyIterable<T> {
+  // Overrides of the ForwardLazyIterable
   filter(predicate: Predicate<T>): LazyIterable<T>;
 
   map<V>(mapper: Mapper<T, V>): LazyIterable<V>;
@@ -60,6 +61,8 @@ export interface LazyIterable<T>
   limit(nValues: number): LazyIterable<T>;
 
   takeWhile(predicate: Predicate<T>): LazyIterable<T>;
+
+  windows(windowSize: number): LazyIterable<LazyIterable<T>>;
 
   /**
    * Reverses the iterable
