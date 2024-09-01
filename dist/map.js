@@ -1,4 +1,4 @@
-import { simpleHelper } from "./helpers";
+import { simpleHelper } from "./helpers.js";
 export function lazyMap(lazyArray, mapper) {
     return simpleHelper(lazyArray, (val) => ({
         item: {

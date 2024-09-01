@@ -1,4 +1,4 @@
-import { simpleHelper } from "./helpers";
+import { simpleHelper } from "./helpers.js";
 export function lazyTakeWhile(lazyIterable, predicate) {
     return simpleHelper(lazyIterable, (val) => {
         // If we fail, terminate the iterable

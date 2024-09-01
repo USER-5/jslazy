@@ -1,5 +1,5 @@
-import { isForwardLazy } from "./index";
-import { forwardLazyIterable } from "./forwardLazyIterable";
+import { isForwardLazy } from "./index.js";
+import { forwardLazyIterable } from "./forwardLazyIterable.js";
 // These should NOT be exported
 const R_ITER = Symbol();
 const LAZY_FLAG = Symbol();

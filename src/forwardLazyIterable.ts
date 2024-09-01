@@ -1,16 +1,16 @@
-import { lazyDo, type Action } from "./do";
-import { lazyFilter } from "./filter";
-import { lazyFlatMap } from "./flatMap";
-import { lazyLimit } from "./limit";
-import { lazyMap, type Mapper } from "./map";
-import type { Predicate } from "./filter";
-import { lazyTakeWhile } from "./takeWhile";
-import { lazyAny } from "./any";
-import { lazyTakeUntil } from "./takeUntil";
-import { lazyAll } from "./all";
-import { collectDeep, type CollectDeep } from "./collectDeep";
-import type { LazyIterable } from "./lazyIterable";
-import { lazyWindow } from "./window";
+import { lazyDo, type Action } from "./do.js";
+import { lazyFilter } from "./filter.js";
+import { lazyFlatMap } from "./flatMap.js";
+import { lazyLimit } from "./limit.js";
+import { lazyMap, type Mapper } from "./map.js";
+import type { Predicate } from "./filter.js";
+import { lazyTakeWhile } from "./takeWhile.js";
+import { lazyAny } from "./any.js";
+import { lazyTakeUntil } from "./takeUntil.js";
+import { lazyAll } from "./all.js";
+import { collectDeep, type CollectDeep } from "./collectDeep.js";
+import type { LazyIterable } from "./lazyIterable.js";
+import { lazyWindow } from "./window.js";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();

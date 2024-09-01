@@ -1,5 +1,5 @@
-import { simpleHelper } from "./helpers";
-import type { ForwardLazyIterable, LazyIterable } from "./index";
+import { simpleHelper } from "./helpers.js";
+import type { ForwardLazyIterable, LazyIterable } from "./index.js";
 
 export type Mapper<T, R> = (value: T) => R;
 

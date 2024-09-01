@@ -1,4 +1,4 @@
-import { lazy, type ForwardLazyIterable, type LazyIterable } from "./index";
+import { lazy, type ForwardLazyIterable, type LazyIterable } from "./index.js";
 
 export type Mapper<T, R> = (value: T) => R;
 

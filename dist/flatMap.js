@@ -1,6 +1,6 @@
-import {} from "./index";
-import { isLazy, reverseHelper, rLazyIterable, } from "./lazyIterable";
-import { forwardLazyIterable } from "./forwardLazyIterable";
+import { isLazy, } from "./index.js";
+import { reverseHelper, rLazyIterable } from "./lazyIterable.js";
+import { forwardLazyIterable } from "./forwardLazyIterable.js";
 export function lazyFlatMap(lazyArray, fn) {
     return reverseHelper(lazyArray, (iterator, prop) => {
         // We switch this out each time we exhaust an inner iterable

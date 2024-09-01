@@ -1,14 +1,14 @@
-import { lazyDo } from "./do";
-import { lazyFilter } from "./filter";
-import { lazyFlatMap } from "./flatMap";
-import { lazyLimit } from "./limit";
-import { lazyMap } from "./map";
-import { lazyTakeWhile } from "./takeWhile";
-import { lazyAny } from "./any";
-import { lazyTakeUntil } from "./takeUntil";
-import { lazyAll } from "./all";
-import { collectDeep } from "./collectDeep";
-import { lazyWindow } from "./window";
+import { lazyDo } from "./do.js";
+import { lazyFilter } from "./filter.js";
+import { lazyFlatMap } from "./flatMap.js";
+import { lazyLimit } from "./limit.js";
+import { lazyMap } from "./map.js";
+import { lazyTakeWhile } from "./takeWhile.js";
+import { lazyAny } from "./any.js";
+import { lazyTakeUntil } from "./takeUntil.js";
+import { lazyAll } from "./all.js";
+import { collectDeep } from "./collectDeep.js";
+import { lazyWindow } from "./window.js";
 // This should NOT be exported
 const FORWARD_LAZY_FLAG = Symbol();
 /**

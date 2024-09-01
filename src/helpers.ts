@@ -1,5 +1,5 @@
-import type { ForwardLazyIterable, LazyIterable } from "./index";
-import { reverseHelper } from "./lazyIterable";
+import type { ForwardLazyIterable, LazyIterable } from "./index.js";
+import { reverseHelper } from "./lazyIterable.js";
 
 /** A simple helper, useful for implementing basic operators */
 export function simpleHelper<

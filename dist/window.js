@@ -1,4 +1,4 @@
-import { lazy } from "./index";
+import { lazy } from "./index.js";
 function* generateWindows(parent, windowSize) {
     let seenItems = [];
     while (seenItems.length < windowSize) {

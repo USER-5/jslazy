@@ -1,13 +1,12 @@
-import { type ForwardLazyIterable } from "./index";
-import type { Mapper } from "./map";
 import {
+  type ForwardLazyIterable,
   isLazy,
-  reverseHelper,
-  rLazyIterable,
   type IntoLazy,
   type LazyIterable,
-} from "./lazyIterable";
-import { forwardLazyIterable } from "./forwardLazyIterable";
+} from "./index.js";
+import type { Mapper } from "./map.js";
+import { reverseHelper, rLazyIterable } from "./lazyIterable.js";
+import { forwardLazyIterable } from "./forwardLazyIterable.js";
 
 export function lazyFlatMap<
   InItem,

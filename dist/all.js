@@ -1,4 +1,4 @@
-import { lazy } from "./index";
+import { lazy } from "./index.js";
 export function lazyAll(lazyIterable, predicate) {
     // In boolean logic:
     //  a & b & c & ... === !(!a | !b | !c | ...)

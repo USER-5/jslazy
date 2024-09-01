@@ -1,4 +1,4 @@
-import type { ForwardLazyIterable, LazyIterable } from "./index";
+import type { ForwardLazyIterable, LazyIterable } from "./index.js";
 /** A simple helper, useful for implementing basic operators */
 export declare function simpleHelper<InItem, OutItem, InIterable extends ForwardLazyIterable<InItem>, OutIterable = InIterable extends LazyIterable<InItem> ? LazyIterable<OutItem> : ForwardLazyIterable<OutItem>>(lazyArray: InIterable, callback: (val: InItem) => AccessorResult<OutItem>): OutIterable;
 export type AccessorResult<T> = {

@@ -1,4 +1,4 @@
-import { simpleHelper } from "./helpers";
+import { simpleHelper } from "./helpers.js";
 export function lazyFilter(lazyIterable, filterFunction) {
     return simpleHelper(lazyIterable, (val) => ({
         filter: filterFunction(val),

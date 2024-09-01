@@ -1,4 +1,4 @@
-import type { ForwardLazyIterable, IntoLazy, LazyIterable } from "./index";
+import type { ForwardLazyIterable, IntoLazy, LazyIterable } from "./index.js";
 /**
  * Construct a lazy iterable from an existing iterable
  *

@@ -1,4 +1,4 @@
-import { reverseHelper } from "./lazyIterable";
+import { reverseHelper } from "./lazyIterable.js";
 export function lazyLimit(lazyIterator, nValues) {
     let nSeen = 0;
     return reverseHelper(lazyIterator, (iterator) => {

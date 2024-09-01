@@ -1,7 +1,7 @@
-import type { Action } from "./do";
-import type { Predicate } from "./filter";
-import { type ForwardLazyIterable } from "./index";
-import type { Mapper } from "./map";
+import type { Action } from "./do.js";
+import type { Predicate } from "./filter.js";
+import { type ForwardLazyIterable } from "./index.js";
+import type { Mapper } from "./map.js";
 declare const R_ITER: unique symbol;
 declare const LAZY_FLAG: unique symbol;
 /**

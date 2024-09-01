@@ -1,5 +1,5 @@
-import { forwardLazyIterable } from "./forwardLazyIterable";
-import { isIntoLazy, rLazyIterable } from "./lazyIterable";
+import { forwardLazyIterable } from "./forwardLazyIterable.js";
+import { isIntoLazy, rLazyIterable } from "./lazyIterable.js";
 export function lazy(source) {
     if (isIntoLazy(source)) {
         return rLazyIterable(source);

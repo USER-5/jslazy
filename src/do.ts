@@ -1,5 +1,5 @@
-import { simpleHelper } from "./helpers";
-import type { ForwardLazyIterable } from "./index";
+import { simpleHelper } from "./helpers.js";
+import type { ForwardLazyIterable } from "./index.js";
 
 export type Action<Item> = (value: Item) => void;
 

@@ -4,7 +4,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es2022",
+    "target": "es2021",
     "allowJs": true,
     "moduleDetection": "force",
     "isolatedModules": true,
@@ -12,10 +12,10 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "module": "ESNext",
+    "module": "NodeNext",
     "outDir": "dist",
     "sourceMap": true,
     "declaration": true,
-    "lib": ["es2022", "dom", "dom.iterable"]
+    "lib": ["es2021"]
   }
 }

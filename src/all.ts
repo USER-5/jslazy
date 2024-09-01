@@ -1,4 +1,4 @@
-import { lazy, type Predicate } from "./index";
+import { lazy, type Predicate } from "./index.js";
 
 export function lazyAll<Item>(
   lazyIterable: Iterable<Item>,

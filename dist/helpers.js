@@ -1,4 +1,4 @@
-import { reverseHelper } from "./lazyIterable";
+import { reverseHelper } from "./lazyIterable.js";
 /** A simple helper, useful for implementing basic operators */
 export function simpleHelper(lazyArray, callback) {
     return reverseHelper(lazyArray, (iterator, _) => {

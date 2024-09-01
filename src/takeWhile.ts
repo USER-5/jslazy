@@ -1,5 +1,5 @@
-import { simpleHelper } from "./helpers";
-import type { ForwardLazyIterable, Predicate } from "./index";
+import { simpleHelper } from "./helpers.js";
+import type { ForwardLazyIterable, Predicate } from "./index.js";
 
 export function lazyTakeWhile<Item, Iter extends ForwardLazyIterable<Item>>(
   lazyIterable: Iter,

@@ -1,4 +1,4 @@
-import { lazy } from "./index";
+import { lazy } from "./index.js";
 
 export type CollectDeep<T> =
   T extends Array<unknown>

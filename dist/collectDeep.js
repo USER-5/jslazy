@@ -1,4 +1,4 @@
-import { lazy } from "./index";
+import { lazy } from "./index.js";
 function isIterable(val) {
     return typeof val === "object" && val != null && Symbol.iterator in val;
 }
