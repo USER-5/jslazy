@@ -1,6 +1,6 @@
 import type { Action } from "./do.js";
 import type { Predicate } from "./filter.js";
-import { isForwardLazy, type ForwardLazyIterable } from "./index.js";
+import { isForwardLazy, lazy, type ForwardLazyIterable } from "./index.js";
 import { forwardLazyIterable } from "./forwardLazyIterable.js";
 import type { Mapper } from "./map.js";
 
@@ -25,7 +25,7 @@ export interface ReversibleIterable<T> {
 
 /** Determines whether an iterable is compatible with `IntoLazy` */
 export function isIntoLazy<T>(val: Iterable<T>): val is IntoLazy<T> {
-  return isLazy(val) || Array.isArray(val);
+  return (Symbol.iterator in val && R_ITER in val) || Array.isArray(val);
 }
 
 /** Determines whether an iterable is a `LazyIterable`. */
@@ -120,16 +120,16 @@ export function reverseHelper<
     ? ForwardLazyIterable<OutItem>
     : LazyIterable<OutItem>,
 >(
-  lazy: InIterable,
+  iterable: InIterable,
   func: (
     it: Iterator<InItem, any, undefined>,
     iteratorProp: typeof R_ITER | typeof Symbol.iterator,
   ) => () => IteratorResult<OutItem>,
 ): OutIterable {
-  const forwardNext = func(lazy[Symbol.iterator](), Symbol.iterator);
-  if (isLazy(lazy)) {
-    const reverseNext = func(lazy[R_ITER](), R_ITER);
-    return rLazyIterable({
+  const forwardNext = func(iterable[Symbol.iterator](), Symbol.iterator);
+  if (isLazy(iterable)) {
+    const reverseNext = func(iterable[R_ITER](), R_ITER);
+    return lazy({
       [Symbol.iterator]() {
         return { next: forwardNext };
       },
@@ -138,10 +138,35 @@ export function reverseHelper<
       },
     }) as OutIterable;
   } else {
-    return forwardLazyIterable({
+    return lazy({
       [Symbol.iterator]() {
         return { next: forwardNext };
       },
     }) as OutIterable;
   }
+}
+
+export function lazyHelper<InItem, OutItem, InIter extends Iterable<InItem>>(
+  iterable: InIter,
+  callback: (iterable: Iterable<InItem>, reverse: boolean) => Iterable<OutItem>,
+): InIter extends LazyIterable<OutItem>
+  ? LazyIterable<OutItem>
+  : ForwardLazyIterable<OutItem> {
+  // We need to return functions that call the callback each time we request a new iterable
+  // Otherwise, we can only iterate once.
+  if (isLazy(iterable)) {
+    return lazy({
+      [Symbol.iterator]() {
+        return callback(iterable, false)[Symbol.iterator]();
+      },
+      [R_ITER]() {
+        return callback(iterable.reverse(), true)[Symbol.iterator]();
+      },
+    });
+  }
+  return lazy({
+    [Symbol.iterator]() {
+      return callback(iterable, false)[Symbol.iterator]();
+    },
+  }) as any;
 }

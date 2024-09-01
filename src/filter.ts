@@ -1,17 +1,12 @@
-import { simpleHelper } from "./helpers.js";
-import type { ForwardLazyIterable } from "./index.js";
-
 export type Predicate<T> = (value: T) => boolean;
 
-export function lazyFilter<Item, Iterable extends ForwardLazyIterable<Item>>(
-  lazyIterable: Iterable,
-  filterFunction: Predicate<Item>,
-): Iterable {
-  return simpleHelper<Item, Item, Iterable, Iterable>(lazyIterable, (val) => ({
-    filter: filterFunction(val),
-    item: {
-      done: false,
-      value: val,
-    },
-  }));
+export function* lazyFilter<Item>(
+  iterable: Iterable<Item>,
+  predicate: Predicate<Item>,
+): Iterable<Item> {
+  for (const value of iterable) {
+    if (predicate(value)) {
+      yield value;
+    }
+  }
 }

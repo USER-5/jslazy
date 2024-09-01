@@ -1,10 +1,10 @@
-import type { ForwardLazyIterable, Predicate } from "./index.js";
+import type { Predicate } from "./index.js";
 import { lazyTakeWhile } from "./takeWhile.js";
 
-export function lazyTakeUntil<Item, Iter extends ForwardLazyIterable<Item>>(
-  lazyIterable: Iter,
+export function lazyTakeUntil<Item>(
+  iterable: Iterable<Item>,
   predicate: Predicate<Item>,
-): Iter {
+): Iterable<Item> {
   // Just invert the predicate and use takeWhile
-  return lazyTakeWhile<Item, Iter>(lazyIterable, (v) => !predicate(v));
+  return lazyTakeWhile(iterable, (v) => !predicate(v));
 }

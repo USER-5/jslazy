@@ -9,7 +9,7 @@ import { lazyAny } from "./any.js";
 import { lazyTakeUntil } from "./takeUntil.js";
 import { lazyAll } from "./all.js";
 import { collectDeep, type CollectDeep } from "./collectDeep.js";
-import type { LazyIterable } from "./lazyIterable.js";
+import { lazyHelper, type LazyIterable } from "./lazyIterable.js";
 import { lazyWindow } from "./window.js";
 
 // This should NOT be exported
@@ -235,23 +235,25 @@ export function forwardLazyIterable<T>(
       return source[Symbol.iterator]();
     },
 
-    // This flags that we have a fully-fledged reversible lazy iterator.
+    // This flags that we have a fully-fledged lazy iterator.
     [FORWARD_LAZY_FLAG]: true,
 
     filter(fn) {
-      return lazyFilter(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyFilter<T>(iter, fn));
     },
 
     do(fn) {
-      return lazyDo(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyDo(iter, fn));
     },
 
     map(fn) {
-      return lazyMap(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyMap(iter, fn));
     },
 
     flatMap(fn) {
-      return lazyFlatMap(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>, reversed) =>
+        lazyFlatMap(iter, fn, reversed),
+      );
     },
 
     limit(nValues) {
@@ -259,11 +261,11 @@ export function forwardLazyIterable<T>(
     },
 
     takeWhile(fn) {
-      return lazyTakeWhile(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyTakeWhile(iter, fn));
     },
 
     takeUntil(fn) {
-      return lazyTakeUntil(this, fn);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyTakeUntil(iter, fn));
     },
 
     collect() {

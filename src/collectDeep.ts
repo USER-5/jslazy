@@ -1,5 +1,3 @@
-import { lazy } from "./index.js";
-
 export type CollectDeep<T> =
   T extends Array<unknown>
     ? T
@@ -12,13 +10,11 @@ function isIterable(val: unknown): val is Iterable<unknown> {
 }
 
 export function collectDeep<T>(iterable: Iterable<T>): CollectDeep<T> {
-  return lazy(iterable)
-    .map((item) => {
-      if (isIterable(item)) {
-        return collectDeep(item);
-      } else {
-        return item;
-      }
-    })
-    .collect() as any;
+  return Array.from(iterable).map((item) => {
+    if (isIterable(item)) {
+      return collectDeep(item);
+    } else {
+      return item;
+    }
+  }) as any;
 }

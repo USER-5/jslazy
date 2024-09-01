@@ -25,3 +25,12 @@ it("Should not process filtered elements later", () => {
 
   expect(seen.length).toBe(2);
 });
+
+it("Should reverse filtered arrays", () => {
+  const lazyArray = lazy([1, 2, 3])
+    .filter((v) => v != 2)
+    .reverse()
+    .collect();
+  const regularArray = [3, 1];
+  expect(lazyArray).toEqual(regularArray);
+});
