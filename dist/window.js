@@ -1,8 +1,9 @@
 import { lazy } from "./index.js";
-function* generateWindows(parent, windowSize) {
+export function* lazyWindows(parent, windowSize) {
     let seenItems = [];
+    let iterator = parent[Symbol.iterator]();
     while (seenItems.length < windowSize) {
-        const nextItem = parent.next();
+        const nextItem = iterator.next();
         if (nextItem.done) {
             return;
         }
@@ -10,7 +11,7 @@ function* generateWindows(parent, windowSize) {
     }
     while (true) {
         yield lazy(seenItems);
-        const nextItem = parent.next();
+        const nextItem = iterator.next();
         if (nextItem.done) {
             return;
         }
@@ -18,13 +19,5 @@ function* generateWindows(parent, windowSize) {
         seenItems.push(nextItem.value);
         seenItems.splice(0, 1);
     }
-}
-export function lazyWindow(lazyArray, windowSize) {
-    const windowsIterable = {
-        [Symbol.iterator]() {
-            return generateWindows(lazyArray[Symbol.iterator](), windowSize);
-        },
-    };
-    return lazy(windowsIterable);
 }
 //# sourceMappingURL=window.js.map

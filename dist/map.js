@@ -1,10 +1,6 @@
-import { simpleHelper } from "./helpers.js";
-export function lazyMap(lazyArray, mapper) {
-    return simpleHelper(lazyArray, (val) => ({
-        item: {
-            done: false,
-            value: mapper(val),
-        },
-    }));
+export function* lazyMap(iterable, mapper) {
+    for (const value of iterable) {
+        yield mapper(value);
+    }
 }
 //# sourceMappingURL=map.js.map

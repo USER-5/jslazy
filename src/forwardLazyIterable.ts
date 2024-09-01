@@ -10,7 +10,7 @@ import { lazyTakeUntil } from "./takeUntil.js";
 import { lazyAll } from "./all.js";
 import { collectDeep, type CollectDeep } from "./collectDeep.js";
 import { lazyHelper, type LazyIterable } from "./lazyIterable.js";
-import { lazyWindow } from "./window.js";
+import { lazyWindows } from "./window.js";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();
@@ -257,7 +257,7 @@ export function forwardLazyIterable<T>(
     },
 
     limit(nValues) {
-      return lazyLimit(this, nValues);
+      return lazyHelper(this, (iter: Iterable<T>) => lazyLimit(iter, nValues));
     },
 
     takeWhile(fn) {
@@ -285,7 +285,9 @@ export function forwardLazyIterable<T>(
     },
 
     windows(windowSize: number) {
-      return lazyWindow(this, windowSize);
+      return lazyHelper(this, (iter: Iterable<T>) =>
+        lazyWindows(iter, windowSize),
+      );
     },
   };
 }

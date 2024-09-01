@@ -1,22 +1,16 @@
-import type { ForwardLazyIterable } from "./index.js";
-import { reverseHelper } from "./lazyIterable.js";
-
-export function lazyLimit<Item, Iterable extends ForwardLazyIterable<Item>>(
-  lazyIterator: Iterable,
+export function* lazyLimit<Item>(
+  iterable: Iterable<Item>,
   nValues: number,
-): Iterable {
+): Iterable<Item> {
   let nSeen = 0;
-  return reverseHelper(lazyIterator, (iterator) => {
-    return () => {
-      if (nSeen < nValues) {
-        nSeen += 1;
-        return iterator.next();
-      } else {
-        return {
-          done: true,
-          value: undefined,
-        };
-      }
-    };
-  });
+  if (nValues === 0) {
+    return;
+  }
+  for (const value of iterable) {
+    yield value;
+    nSeen++;
+    if (nSeen >= nValues) {
+      return;
+    }
+  }
 }

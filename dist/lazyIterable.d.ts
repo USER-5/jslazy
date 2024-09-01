@@ -48,11 +48,5 @@ export interface LazyIterable<T> extends ReversibleIterable<T>, ForwardLazyItera
     readonly [LAZY_FLAG]: true;
 }
 export declare function rLazyIterable<T>(source: IntoLazy<T>): LazyIterable<T>;
-/**
- * Applies the provided function to both forward and reverse iterators
- *
- * @param lazy The lazy array to operate on
- * @param func A function that takes 1 or 2 parameters
- */
-export declare function reverseHelper<InItem, OutItem, InIterable extends ForwardLazyIterable<InItem>, OutIterable = InIterable extends ForwardLazyIterable<InItem> ? ForwardLazyIterable<OutItem> : LazyIterable<OutItem>>(lazy: InIterable, func: (it: Iterator<InItem, any, undefined>, iteratorProp: typeof R_ITER | typeof Symbol.iterator) => () => IteratorResult<OutItem>): OutIterable;
+export declare function lazyHelper<InItem, OutItem, InIter extends Iterable<InItem>>(iterable: InIter, callback: (iterable: Iterable<InItem>, reverse: boolean) => Iterable<OutItem>): InIter extends LazyIterable<OutItem> ? LazyIterable<OutItem> : ForwardLazyIterable<OutItem>;
 export {};

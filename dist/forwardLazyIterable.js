@@ -8,7 +8,8 @@ import { lazyAny } from "./any.js";
 import { lazyTakeUntil } from "./takeUntil.js";
 import { lazyAll } from "./all.js";
 import { collectDeep } from "./collectDeep.js";
-import { lazyWindow } from "./window.js";
+import { lazyHelper } from "./lazyIterable.js";
+import { lazyWindows } from "./window.js";
 // This should NOT be exported
 const FORWARD_LAZY_FLAG = Symbol();
 /**
@@ -34,28 +35,28 @@ export function forwardLazyIterable(source) {
         [Symbol.iterator]() {
             return source[Symbol.iterator]();
         },
-        // This flags that we have a fully-fledged reversible lazy iterator.
+        // This flags that we have a fully-fledged lazy iterator.
         [FORWARD_LAZY_FLAG]: true,
         filter(fn) {
-            return lazyFilter(this, fn);
+            return lazyHelper(this, (iter) => lazyFilter(iter, fn));
         },
         do(fn) {
-            return lazyDo(this, fn);
+            return lazyHelper(this, (iter) => lazyDo(iter, fn));
         },
         map(fn) {
-            return lazyMap(this, fn);
+            return lazyHelper(this, (iter) => lazyMap(iter, fn));
         },
         flatMap(fn) {
-            return lazyFlatMap(this, fn);
+            return lazyHelper(this, (iter, reversed) => lazyFlatMap(iter, fn, reversed));
         },
         limit(nValues) {
-            return lazyLimit(this, nValues);
+            return lazyHelper(this, (iter) => lazyLimit(iter, nValues));
         },
         takeWhile(fn) {
-            return lazyTakeWhile(this, fn);
+            return lazyHelper(this, (iter) => lazyTakeWhile(iter, fn));
         },
         takeUntil(fn) {
-            return lazyTakeUntil(this, fn);
+            return lazyHelper(this, (iter) => lazyTakeUntil(iter, fn));
         },
         collect() {
             return Array.from(this);
@@ -70,7 +71,7 @@ export function forwardLazyIterable(source) {
             return lazyAll(this, fn);
         },
         windows(windowSize) {
-            return lazyWindow(this, windowSize);
+            return lazyHelper(this, (iter) => lazyWindows(iter, windowSize));
         },
     };
 }

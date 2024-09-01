@@ -1,11 +1,11 @@
-import { isForwardLazy } from "./index.js";
+import { isForwardLazy, lazy } from "./index.js";
 import { forwardLazyIterable } from "./forwardLazyIterable.js";
 // These should NOT be exported
 const R_ITER = Symbol();
 const LAZY_FLAG = Symbol();
 /** Determines whether an iterable is compatible with `IntoLazy` */
 export function isIntoLazy(val) {
-    return isLazy(val) || Array.isArray(val);
+    return (Symbol.iterator in val && R_ITER in val) || Array.isArray(val);
 }
 /** Determines whether an iterable is a `LazyIterable`. */
 export function isLazy(val) {
@@ -38,31 +38,23 @@ function* arrayToReverseIterator(arr) {
         yield arr[index];
     }
 }
-/**
- * Applies the provided function to both forward and reverse iterators
- *
- * @param lazy The lazy array to operate on
- * @param func A function that takes 1 or 2 parameters
- */
-export function reverseHelper(lazy, func) {
-    const forwardNext = func(lazy[Symbol.iterator](), Symbol.iterator);
-    if (isLazy(lazy)) {
-        const reverseNext = func(lazy[R_ITER](), R_ITER);
-        return rLazyIterable({
+export function lazyHelper(iterable, callback) {
+    // We need to return functions that call the callback each time we request a new iterable
+    // Otherwise, we can only iterate once.
+    if (isLazy(iterable)) {
+        return lazy({
             [Symbol.iterator]() {
-                return { next: forwardNext };
+                return callback(iterable, false)[Symbol.iterator]();
             },
             [R_ITER]() {
-                return { next: reverseNext };
+                return callback(iterable.reverse(), true)[Symbol.iterator]();
             },
         });
     }
-    else {
-        return forwardLazyIterable({
-            [Symbol.iterator]() {
-                return { next: forwardNext };
-            },
-        });
-    }
+    return lazy({
+        [Symbol.iterator]() {
+            return callback(iterable, false)[Symbol.iterator]();
+        },
+    });
 }
 //# sourceMappingURL=lazyIterable.js.map

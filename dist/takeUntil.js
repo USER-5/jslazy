@@ -1,6 +1,6 @@
 import { lazyTakeWhile } from "./takeWhile.js";
-export function lazyTakeUntil(lazyIterable, predicate) {
+export function* lazyTakeUntil(iterable, predicate) {
     // Just invert the predicate and use takeWhile
-    return lazyTakeWhile(lazyIterable, (v) => !predicate(v));
+    yield* lazyTakeWhile(iterable, (v) => !predicate(v));
 }
 //# sourceMappingURL=takeUntil.js.map

@@ -1,22 +1,9 @@
-import { simpleHelper } from "./helpers.js";
-export function lazyTakeWhile(lazyIterable, predicate) {
-    return simpleHelper(lazyIterable, (val) => {
-        // If we fail, terminate the iterable
-        if (!predicate(val)) {
-            return {
-                item: {
-                    done: true,
-                    value: undefined,
-                },
-            };
+export function* lazyTakeWhile(iterable, predicate) {
+    for (const item of iterable) {
+        if (!predicate(item)) {
+            return;
         }
-        // Otherwise, pass-thru
-        return {
-            item: {
-                done: false,
-                value: val,
-            },
-        };
-    });
+        yield item;
+    }
 }
 //# sourceMappingURL=takeWhile.js.map

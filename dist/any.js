@@ -1,5 +1,5 @@
-export function lazyAny(lazyIterable, predicate) {
-    for (const item of lazyIterable) {
+export function lazyAny(iterable, predicate) {
+    for (const item of iterable) {
         if (predicate(item)) {
             // early terminate
             return true;

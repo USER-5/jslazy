@@ -1,19 +1,14 @@
-import { reverseHelper } from "./lazyIterable.js";
-export function lazyLimit(lazyIterator, nValues) {
+export function* lazyLimit(iterable, nValues) {
     let nSeen = 0;
-    return reverseHelper(lazyIterator, (iterator) => {
-        return () => {
-            if (nSeen < nValues) {
-                nSeen += 1;
-                return iterator.next();
-            }
-            else {
-                return {
-                    done: true,
-                    value: undefined,
-                };
-            }
-        };
-    });
+    if (nValues === 0) {
+        return;
+    }
+    for (const value of iterable) {
+        yield value;
+        nSeen++;
+        if (nSeen >= nValues) {
+            return;
+        }
+    }
 }
 //# sourceMappingURL=limit.js.map

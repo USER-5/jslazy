@@ -1,14 +1,15 @@
-import { lazy, type ForwardLazyIterable, type LazyIterable } from "./index.js";
+import { lazy, type LazyIterable } from "./index.js";
 
 export type Mapper<T, R> = (value: T) => R;
 
-function* generateWindows<T>(
-  parent: Iterator<T>,
+export function* lazyWindows<T>(
+  parent: Iterable<T>,
   windowSize: number,
-): Iterator<LazyIterable<T>> {
+): Iterable<LazyIterable<T>> {
   let seenItems = [];
+  let iterator = parent[Symbol.iterator]();
   while (seenItems.length < windowSize) {
-    const nextItem = parent.next();
+    const nextItem = iterator.next();
     if (nextItem.done) {
       return;
     }
@@ -17,7 +18,7 @@ function* generateWindows<T>(
 
   while (true) {
     yield lazy(seenItems);
-    const nextItem = parent.next();
+    const nextItem = iterator.next();
     if (nextItem.done) {
       return;
     }
@@ -25,18 +26,4 @@ function* generateWindows<T>(
     seenItems.push(nextItem.value);
     seenItems.splice(0, 1);
   }
-}
-
-export function lazyWindow<Item, Iter extends ForwardLazyIterable<Item>>(
-  lazyArray: Iter,
-  windowSize: number,
-): Iter extends LazyIterable<Item>
-  ? LazyIterable<LazyIterable<Item>>
-  : ForwardLazyIterable<LazyIterable<Item>> {
-  const windowsIterable = {
-    [Symbol.iterator]() {
-      return generateWindows(lazyArray[Symbol.iterator](), windowSize);
-    },
-  };
-  return lazy(windowsIterable) as any;
 }

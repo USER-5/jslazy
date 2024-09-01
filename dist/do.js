@@ -1,13 +1,7 @@
-import { simpleHelper } from "./helpers.js";
-export function lazyDo(lazyArray, action) {
-    return simpleHelper(lazyArray, (val) => {
-        action(val);
-        return {
-            item: {
-                done: false,
-                value: val,
-            },
-        };
-    });
+export function* lazyDo(iterable, action) {
+    for (const value of iterable) {
+        action(value);
+        yield value;
+    }
 }
 //# sourceMappingURL=do.js.map

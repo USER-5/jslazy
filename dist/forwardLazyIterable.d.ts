@@ -2,7 +2,7 @@ import { type Action } from "./do.js";
 import { type Mapper } from "./map.js";
 import type { Predicate } from "./filter.js";
 import { type CollectDeep } from "./collectDeep.js";
-import type { LazyIterable } from "./lazyIterable.js";
+import { type LazyIterable } from "./lazyIterable.js";
 declare const FORWARD_LAZY_FLAG: unique symbol;
 /**
  * Determines whether the provided iterable is a ForwardLazyIterable.

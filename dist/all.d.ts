@@ -1,2 +1,2 @@
 import { type Predicate } from "./index.js";
-export declare function lazyAll<Item>(lazyIterable: Iterable<Item>, predicate: Predicate<Item>): boolean;
+export declare function lazyAll<Item>(iterable: Iterable<Item>, predicate: Predicate<Item>): boolean;

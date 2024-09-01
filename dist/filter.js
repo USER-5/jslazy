@@ -1,11 +1,8 @@
-import { simpleHelper } from "./helpers.js";
-export function lazyFilter(lazyIterable, filterFunction) {
-    return simpleHelper(lazyIterable, (val) => ({
-        filter: filterFunction(val),
-        item: {
-            done: false,
-            value: val,
-        },
-    }));
+export function* lazyFilter(iterable, predicate) {
+    for (const value of iterable) {
+        if (predicate(value)) {
+            yield value;
+        }
+    }
 }
 //# sourceMappingURL=filter.js.map

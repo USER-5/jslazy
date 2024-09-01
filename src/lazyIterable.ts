@@ -106,46 +106,6 @@ function* arrayToReverseIterator<T>(arr: Array<T>): Iterator<T> {
   }
 }
 
-/**
- * Applies the provided function to both forward and reverse iterators
- *
- * @param lazy The lazy array to operate on
- * @param func A function that takes 1 or 2 parameters
- */
-export function reverseHelper<
-  InItem,
-  OutItem,
-  InIterable extends ForwardLazyIterable<InItem>,
-  OutIterable = InIterable extends ForwardLazyIterable<InItem>
-    ? ForwardLazyIterable<OutItem>
-    : LazyIterable<OutItem>,
->(
-  iterable: InIterable,
-  func: (
-    it: Iterator<InItem, any, undefined>,
-    iteratorProp: typeof R_ITER | typeof Symbol.iterator,
-  ) => () => IteratorResult<OutItem>,
-): OutIterable {
-  const forwardNext = func(iterable[Symbol.iterator](), Symbol.iterator);
-  if (isLazy(iterable)) {
-    const reverseNext = func(iterable[R_ITER](), R_ITER);
-    return lazy({
-      [Symbol.iterator]() {
-        return { next: forwardNext };
-      },
-      [R_ITER]() {
-        return { next: reverseNext };
-      },
-    }) as OutIterable;
-  } else {
-    return lazy({
-      [Symbol.iterator]() {
-        return { next: forwardNext };
-      },
-    }) as OutIterable;
-  }
-}
-
 export function lazyHelper<InItem, OutItem, InIter extends Iterable<InItem>>(
   iterable: InIter,
   callback: (iterable: Iterable<InItem>, reverse: boolean) => Iterable<OutItem>,
