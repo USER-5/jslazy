@@ -1,8 +1,8 @@
-import { isLazy, lazy } from "./index.js";
+import { lazy } from "./index.js";
 import { isIntoLazy } from "./lazyIterable.js";
 import type { Mapper } from "./map.js";
 
-export function* lazyFlatMap<InItem, OutItem>(
+export function* lazyFlatMapGen<InItem, OutItem>(
   iterable: Iterable<InItem>,
   mapper: Mapper<InItem, Iterable<OutItem>>,
   reverse: boolean,

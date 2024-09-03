@@ -1,15 +1,15 @@
-import { lazyDo } from "./do.js";
-import { lazyFilter } from "./filter.js";
-import { lazyFlatMap } from "./flatMap.js";
-import { lazyLimit } from "./limit.js";
-import { lazyMap } from "./map.js";
-import { lazyTakeWhile } from "./takeWhile.js";
+import { lazyDoGen } from "./do.js";
+import { lazyFilterGen } from "./filter.js";
+import { lazyFlatMapGen } from "./flatMap.js";
+import { lazyLimitGen } from "./limit.js";
+import { lazyMapGen } from "./map.js";
+import { lazyTakeWhileGen } from "./takeWhile.js";
 import { lazyAny } from "./any.js";
-import { lazyTakeUntil } from "./takeUntil.js";
+import { lazyTakeUntilGen } from "./takeUntil.js";
 import { lazyAll } from "./all.js";
 import { collectDeep } from "./collectDeep.js";
 import { lazyHelper } from "./lazyIterable.js";
-import { lazyWindows } from "./window.js";
+import { lazyWindowsGen } from "./window.js";
 // This should NOT be exported
 const FORWARD_LAZY_FLAG = Symbol();
 /**
@@ -38,25 +38,25 @@ export function forwardLazyIterable(source) {
         // This flags that we have a fully-fledged lazy iterator.
         [FORWARD_LAZY_FLAG]: true,
         filter(fn) {
-            return lazyHelper(this, (iter) => lazyFilter(iter, fn));
+            return lazyHelper(this, (iter) => lazyFilterGen(iter, fn));
         },
         do(fn) {
-            return lazyHelper(this, (iter) => lazyDo(iter, fn));
+            return lazyHelper(this, (iter) => lazyDoGen(iter, fn));
         },
         map(fn) {
-            return lazyHelper(this, (iter) => lazyMap(iter, fn));
+            return lazyHelper(this, (iter) => lazyMapGen(iter, fn));
         },
         flatMap(fn) {
-            return lazyHelper(this, (iter, reversed) => lazyFlatMap(iter, fn, reversed));
+            return lazyHelper(this, (iter, reversed) => lazyFlatMapGen(iter, fn, reversed));
         },
         limit(nValues) {
-            return lazyHelper(this, (iter) => lazyLimit(iter, nValues));
+            return lazyHelper(this, (iter) => lazyLimitGen(iter, nValues));
         },
         takeWhile(fn) {
-            return lazyHelper(this, (iter) => lazyTakeWhile(iter, fn));
+            return lazyHelper(this, (iter) => lazyTakeWhileGen(iter, fn));
         },
         takeUntil(fn) {
-            return lazyHelper(this, (iter) => lazyTakeUntil(iter, fn));
+            return lazyHelper(this, (iter) => lazyTakeUntilGen(iter, fn));
         },
         collect() {
             return Array.from(this);
@@ -71,7 +71,7 @@ export function forwardLazyIterable(source) {
             return lazyAll(this, fn);
         },
         windows(windowSize) {
-            return lazyHelper(this, (iter) => lazyWindows(iter, windowSize));
+            return lazyHelper(this, (iter) => lazyWindowsGen(iter, windowSize));
         },
     };
 }

@@ -1,4 +1,4 @@
-export function* lazyMap(iterable, mapper) {
+export function* lazyMapGen(iterable, mapper) {
     for (const value of iterable) {
         yield mapper(value);
     }

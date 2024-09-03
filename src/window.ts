@@ -2,7 +2,7 @@ import { lazy, type LazyIterable } from "./index.js";
 
 export type Mapper<T, R> = (value: T) => R;
 
-export function* lazyWindows<T>(
+export function* lazyWindowsGen<T>(
   parent: Iterable<T>,
   windowSize: number,
 ): Iterable<LazyIterable<T>> {

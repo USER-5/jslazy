@@ -1,16 +1,16 @@
-import { lazyDo, type Action } from "./do.js";
-import { lazyFilter } from "./filter.js";
-import { lazyFlatMap } from "./flatMap.js";
-import { lazyLimit } from "./limit.js";
-import { lazyMap, type Mapper } from "./map.js";
+import { lazyDoGen, type Action } from "./do.js";
+import { lazyFilterGen } from "./filter.js";
+import { lazyFlatMapGen } from "./flatMap.js";
+import { lazyLimitGen } from "./limit.js";
+import { lazyMapGen, type Mapper } from "./map.js";
 import type { Predicate } from "./filter.js";
-import { lazyTakeWhile } from "./takeWhile.js";
+import { lazyTakeWhileGen } from "./takeWhile.js";
 import { lazyAny } from "./any.js";
-import { lazyTakeUntil } from "./takeUntil.js";
+import { lazyTakeUntilGen } from "./takeUntil.js";
 import { lazyAll } from "./all.js";
 import { collectDeep, type CollectDeep } from "./collectDeep.js";
 import { lazyHelper, type LazyIterable } from "./lazyIterable.js";
-import { lazyWindows } from "./window.js";
+import { lazyWindowsGen } from "./window.js";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();
@@ -239,33 +239,41 @@ export function forwardLazyIterable<T>(
     [FORWARD_LAZY_FLAG]: true,
 
     filter(fn) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyFilter<T>(iter, fn));
+      return lazyHelper(this, (iter: Iterable<T>) =>
+        lazyFilterGen<T>(iter, fn),
+      );
     },
 
     do(fn) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyDo(iter, fn));
+      return lazyHelper(this, (iter: Iterable<T>) => lazyDoGen(iter, fn));
     },
 
     map(fn) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyMap(iter, fn));
+      return lazyHelper(this, (iter: Iterable<T>) => lazyMapGen(iter, fn));
     },
 
     flatMap(fn) {
       return lazyHelper(this, (iter: Iterable<T>, reversed) =>
-        lazyFlatMap(iter, fn, reversed),
+        lazyFlatMapGen(iter, fn, reversed),
       );
     },
 
     limit(nValues) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyLimit(iter, nValues));
+      return lazyHelper(this, (iter: Iterable<T>) =>
+        lazyLimitGen(iter, nValues),
+      );
     },
 
     takeWhile(fn) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyTakeWhile(iter, fn));
+      return lazyHelper(this, (iter: Iterable<T>) =>
+        lazyTakeWhileGen(iter, fn),
+      );
     },
 
     takeUntil(fn) {
-      return lazyHelper(this, (iter: Iterable<T>) => lazyTakeUntil(iter, fn));
+      return lazyHelper(this, (iter: Iterable<T>) =>
+        lazyTakeUntilGen(iter, fn),
+      );
     },
 
     collect() {
@@ -286,7 +294,7 @@ export function forwardLazyIterable<T>(
 
     windows(windowSize: number) {
       return lazyHelper(this, (iter: Iterable<T>) =>
-        lazyWindows(iter, windowSize),
+        lazyWindowsGen(iter, windowSize),
       );
     },
   };

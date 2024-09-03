@@ -1,1 +1,1 @@
-export declare function lazyLimit<Item>(iterable: Iterable<Item>, nValues: number): Iterable<Item>;
+export declare function lazyLimitGen<Item>(iterable: Iterable<Item>, nValues: number): Iterable<Item>;

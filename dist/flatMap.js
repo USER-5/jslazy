@@ -1,6 +1,6 @@
-import { isLazy, lazy } from "./index.js";
+import { lazy } from "./index.js";
 import { isIntoLazy } from "./lazyIterable.js";
-export function* lazyFlatMap(iterable, mapper, reverse) {
+export function* lazyFlatMapGen(iterable, mapper, reverse) {
     for (const parentItem of iterable) {
         let childIterable = mapper(parentItem);
         if (reverse) {

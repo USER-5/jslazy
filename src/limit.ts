@@ -1,4 +1,4 @@
-export function* lazyLimit<Item>(
+export function* lazyLimitGen<Item>(
   iterable: Iterable<Item>,
   nValues: number,
 ): Iterable<Item> {

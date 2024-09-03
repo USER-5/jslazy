@@ -1,6 +1,6 @@
 import type { Predicate } from "./index.js";
 
-export function* lazyTakeWhile<Item>(
+export function* lazyTakeWhileGen<Item>(
   iterable: Iterable<Item>,
   predicate: Predicate<Item>,
 ): Iterable<Item> {

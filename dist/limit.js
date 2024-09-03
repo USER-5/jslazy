@@ -1,4 +1,4 @@
-export function* lazyLimit(iterable, nValues) {
+export function* lazyLimitGen(iterable, nValues) {
     let nSeen = 0;
     if (nValues === 0) {
         return;

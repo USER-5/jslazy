@@ -1,5 +1,5 @@
 import { lazy } from "./index.js";
-export function* lazyWindows(parent, windowSize) {
+export function* lazyWindowsGen(parent, windowSize) {
     let seenItems = [];
     let iterator = parent[Symbol.iterator]();
     while (seenItems.length < windowSize) {

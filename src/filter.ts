@@ -1,6 +1,6 @@
 export type Predicate<T> = (value: T) => boolean;
 
-export function* lazyFilter<Item>(
+export function* lazyFilterGen<Item>(
   iterable: Iterable<Item>,
   predicate: Predicate<Item>,
 ): Iterable<Item> {
