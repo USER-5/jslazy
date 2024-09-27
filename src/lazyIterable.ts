@@ -50,6 +50,8 @@ export interface LazyIterable<T>
 
   map<V>(mapper: Mapper<T, V>): LazyIterable<V>;
 
+  flatten(): LazyIterable<T>;
+
   flatMap<V, MapperIter extends Iterable<V>>(
     mapper: Mapper<T, MapperIter>,
   ): MapperIter extends IntoLazy<V> ? LazyIterable<V> : ForwardLazyIterable<V>;

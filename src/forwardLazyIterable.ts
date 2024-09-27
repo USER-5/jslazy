@@ -11,6 +11,7 @@ import { lazyAll } from "./all.js";
 import { collectDeep, type CollectDeep } from "./collectDeep.js";
 import { lazyHelper, type LazyIterable } from "./lazyIterable.js";
 import { lazyWindowsGen } from "./window.js";
+import { lazyFlattenGen } from "./flatten.js";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();
@@ -53,6 +54,21 @@ export interface ForwardLazyIterable<T> extends Iterable<T> {
    */
   map<V>(mapper: Mapper<T, V>): ForwardLazyIterable<V>;
 
+  /**
+   * Flattens a 2d lazy array
+   *
+   * ## Example
+   *
+   * ```ts
+   * const lazyArray = lazy([
+   *   [1, 2],
+   *   [3, 4],
+   * ]);
+   * const flattened = lazyArray.flatten().collect();
+   * // = [1,2,3,4];
+   * ```
+   */
+  flatten(): ForwardLazyIterable<T>;
   /**
    * Flattens each item of the contained lazy arrays.
    *
@@ -250,6 +266,10 @@ export function forwardLazyIterable<T>(
 
     map(fn) {
       return lazyHelper(this, (iter: Iterable<T>) => lazyMapGen(iter, fn));
+    },
+
+    flatten() {
+      return lazyHelper(this, (iter: Iterable<T>) => lazyFlattenGen(iter));
     },
 
     flatMap(fn) {
