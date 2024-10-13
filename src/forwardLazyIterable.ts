@@ -1,16 +1,16 @@
-import { lazyDoGen, type Action } from "./do.js";
-import { lazyFilterGen } from "./filter.js";
-import { lazyFlatMapGen } from "./flatMap.js";
-import { lazyLimitGen } from "./limit.js";
-import { lazyMapGen, type Mapper } from "./map.js";
-import type { Predicate } from "./filter.js";
-import { lazyTakeWhileGen } from "./takeWhile.js";
-import { lazyAny } from "./any.js";
-import { lazyTakeUntilGen } from "./takeUntil.js";
-import { lazyAll } from "./all.js";
-import { collectDeep, type CollectDeep } from "./collectDeep.js";
+import { lazyDoGen, type Action } from "./operators/do.js";
+import { lazyFilterGen } from "./operators/filter.js";
+import { lazyFlatMapGen } from "./operators/flatMap.js";
+import { lazyLimitGen } from "./operators/limit.js";
+import { lazyMapGen, type Mapper } from "./operators/map.js";
+import type { Predicate } from "./operators/filter.js";
+import { lazyTakeWhileGen } from "./operators/takeWhile.js";
+import { lazyAny } from "./operators/any.js";
+import { lazyTakeUntilGen } from "./operators/takeUntil.js";
+import { lazyAll } from "./operators/all.js";
+import { collectDeep, type CollectDeep } from "./operators/collectDeep.js";
 import { lazyHelper, type LazyIterable } from "./lazyIterable.js";
-import { lazyWindowsGen } from "./window.js";
+import { lazyWindowsGen } from "./operators/window.js";
 
 // This should NOT be exported
 const FORWARD_LAZY_FLAG: unique symbol = Symbol();

@@ -1,7 +1,7 @@
-import { type Action } from "./do.js";
-import { type Mapper } from "./map.js";
-import type { Predicate } from "./filter.js";
-import { type CollectDeep } from "./collectDeep.js";
+import { type Action } from "./operators/do.js";
+import { type Mapper } from "./operators/map.js";
+import type { Predicate } from "./operators/filter.js";
+import { type CollectDeep } from "./operators/collectDeep.js";
 import { type LazyIterable } from "./lazyIterable.js";
 declare const FORWARD_LAZY_FLAG: unique symbol;
 /**

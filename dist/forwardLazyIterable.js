@@ -1,15 +1,15 @@
-import { lazyDoGen } from "./do.js";
-import { lazyFilterGen } from "./filter.js";
-import { lazyFlatMapGen } from "./flatMap.js";
-import { lazyLimitGen } from "./limit.js";
-import { lazyMapGen } from "./map.js";
-import { lazyTakeWhileGen } from "./takeWhile.js";
-import { lazyAny } from "./any.js";
-import { lazyTakeUntilGen } from "./takeUntil.js";
-import { lazyAll } from "./all.js";
-import { collectDeep } from "./collectDeep.js";
+import { lazyDoGen } from "./operators/do.js";
+import { lazyFilterGen } from "./operators/filter.js";
+import { lazyFlatMapGen } from "./operators/flatMap.js";
+import { lazyLimitGen } from "./operators/limit.js";
+import { lazyMapGen } from "./operators/map.js";
+import { lazyTakeWhileGen } from "./operators/takeWhile.js";
+import { lazyAny } from "./operators/any.js";
+import { lazyTakeUntilGen } from "./operators/takeUntil.js";
+import { lazyAll } from "./operators/all.js";
+import { collectDeep } from "./operators/collectDeep.js";
 import { lazyHelper } from "./lazyIterable.js";
-import { lazyWindowsGen } from "./window.js";
+import { lazyWindowsGen } from "./operators/window.js";
 // This should NOT be exported
 const FORWARD_LAZY_FLAG = Symbol();
 /**

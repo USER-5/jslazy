@@ -1,8 +1,8 @@
-import type { Action } from "./do.js";
-import type { Predicate } from "./filter.js";
+import type { Action } from "./operators/do.js";
+import type { Predicate } from "./operators/filter.js";
 import { isForwardLazy, lazy, type ForwardLazyIterable } from "./index.js";
 import { forwardLazyIterable } from "./forwardLazyIterable.js";
-import type { Mapper } from "./map.js";
+import type { Mapper } from "./operators/map.js";
 
 // These should NOT be exported
 const R_ITER: unique symbol = Symbol();
