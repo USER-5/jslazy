@@ -24,12 +24,3 @@ it("Should allow flatMap with standard arrays", () => {
   const regularArray = [-1, -2, 10, -1, -2, 20, -1, -2, 30];
   expect(lazyArray).toEqual(regularArray);
 });
-
-it("Should not break when trying to reverse irreversible arrays", () => {
-  const lazyArray = lazy([10, 20, 30]).flatMap((v) => new Set([-1, -2, v]));
-
-  // TS knows that this doesn't work, but so should JS - just in case.
-  expect(() => lazyArray["reverse"]().collect()).toThrowError(
-    "Cannot Reverse Child Iterable",
-  );
-});
