@@ -7,5 +7,3 @@ pre-commit:
       run: npm run format && git add {staged_files}
     test:
       run: npm run test:run
-    build:
-      run: npm run build
