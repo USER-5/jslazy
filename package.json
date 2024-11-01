@@ -1,6 +1,6 @@
 {
   "name": "jslazy",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Adding the missing bridge between arrays, and iterators in JS",
   "type": "module",
   "repository": {
