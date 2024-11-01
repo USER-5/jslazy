@@ -216,9 +216,6 @@ export interface LazyIterable<T> extends Iterable<T> {
   /**
    * Returns an iterable of overlapping sections of the parent.
    *
-   * Regardless of whether the parent was a `ForwardLazyIterable`, the children
-   * iterable will always be reversible.
-   *
    * ## Example
    *
    * ```ts
