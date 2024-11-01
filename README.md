@@ -144,12 +144,8 @@ const childNames = people.flatMap((person) => person.children).collect();
 
 ### Reverse
 
-**Does not apply to `ForwardLazyIterable`s**
-
-Reverses the iterator's order. This is still a lazy operation, but can only be
-performed on `LazyIterables`. The library prefers to return `LazyIterables`
-where possible; that is, when convertint either other `LazyIterables`, or
-`Array`s.
+Reverses the iterator's order. This is still a lazy operation, if performed from
+a base of arrays.
 
 ```ts
 const reversedNumbers = lazy([1, 2, 3]).reverse().collect();
@@ -287,39 +283,4 @@ const lazyWindows = lazy([1, 2, 3, 4, 5]).windows(2).collectDeep();
 //    [3, 4],
 //    [4, 5],
 //  ];
-```
-
-## LazyIterable and ForwardLazyIterable
-
-There are two core types to this library: `ForwardLazyIterable`, and
-`LazyIterable`. Ideally, you will be always dealing with a `LazyIterable`, as
-that is an extension of the `ForwardLazyIterable` type. This enables lazy
-reversing of the iterable.
-
-You will end up with a non-reversible `ForwardLazyIterable` if you provide a
-non-reversible `Iterable` to the `lazy` function.
-
-There are two main cases where you will end up with a non-reversible
-`ForwardLazyIterable`:
-
-1. You have an infinite iterable (and therefore it has no 'end' to point at for
-   the reverse)
-2. You have an iterable that is already lazy, but not from this library e.g.
-   `Object.keys()`, or `new Set(1,2,3)`
-
-In the first case, we cannot support reversing. For the second case, it's likely
-best to stick with a non-reversible `ForwardLazyIterable`, unless you really
-want a reversible iterable, in which case you can convert it into an array
-first.
-
-```ts
-const notableNumbersObj = {
-  favourite: 123,
-  daysInApril: 30,
-  zero: 0,
-};
-// But honestly, why does the order matter here?
-const notableNumbersIter = Object.values(notableNumbersObj);
-const reversibleLazy = lazy(Array.from(notableNumbersIter)).reverse();
-// reversibleLazy.collect() === [0, 30, 123];
 ```
